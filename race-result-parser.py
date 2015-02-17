@@ -1,6 +1,9 @@
 import os
 
-data_files = os.listdir("./data")
+DATA_DIRECTORY = "./data/"
 
-print(data_files)
+data_files = os.listdir(DATA_DIRECTORY)
 
+for filename in data_files:
+    with open(DATA_DIRECTORY + filename, "r") as f:
+        print(f.read())
