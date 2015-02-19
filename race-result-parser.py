@@ -2,14 +2,12 @@ import os
 import re
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
-NON_SPACE = re.compile(r'\S')
-
 
 def parse_results(data):
     header_lines = get_header(data)
-    header_fields = interpret_header(header_lines)
+    fields = get_fields(header_lines)
 
-    print header_lines
+    print fields
 
 def get_header(data):
     header_lines = None
@@ -30,9 +28,27 @@ def get_header(data):
 
 # Place Name                     Bib#  Age S Guntime  Pace     
 # ===== ======================== ===== === = =======  ===== 
-def interpret_header(header_lines):
-    # Find start and end of every non-space character
+def get_fields(header_lines):
+    fields = []
+    new_field = {'start':0}
     
+    # TODO: This currently relies on a space being at the end of the header
+    for i, c in enumerate(header_lines[1]):
+        if (c == " "):
+            new_field['end'] = i
+            fields.append(new_field)
+
+            new_field = {'start':i+1}
+
+    for field in fields:
+        start = field['start']
+        end = field['end']
+
+        field['name'] = header_lines[0][start:end].strip()
+
+    return fields
+
+
 
 
 DATA_DIRECTORY = "./data/"
