@@ -6,7 +6,7 @@ RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 def parse_results(raw_data):
     header_lines = get_header(raw_data)
     field_defs = get_field_defs(header_lines)
-    result_lines = filter_to_result_lines(header_lines, field_defs, raw_data)
+    result_lines = filter_to_result_lines(header_lines, raw_data)
 
     return result_lines
     # return get_mapped_dataset(field_defs, result_lines)
@@ -27,9 +27,6 @@ def get_header(raw_data):
 
     return header_lines
 
-
-# Place Name                     Bib#  Age S Guntime  Pace     
-# ===== ======================== ===== === = =======  ===== 
 def get_field_defs(header_lines):
     field_defs = []
     new_field = {'start':0}
@@ -56,11 +53,11 @@ def filter_to_result_lines(header_lines, raw_data):
     result_lines = []
 
     # Start by eliminating header lines
-    result_lines = [line for line in lines if not any(header == line for header in header_lines)]
+    result_lines = [line for line in lines if any(line != header for header in header_lines)]
 
     # Next, save only lines that are the same length as a header line
-    expected_lengths = map(len, header_lines)
-    result_lines = [result for result in result_lines if any(len(result) == length for length in expected_lengths)]
+    good_lengths = map(len, header_lines)
+    result_lines = [line for line in result_lines if any(len(line) == length for length in good_lengths)]
 
     # TODO: Finally, calculate and compare symbol distributions
 
