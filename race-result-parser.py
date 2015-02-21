@@ -131,9 +131,6 @@ def main():
     else:
         filename = sys.argv[1]
 
-    # TODO: Remove before committing
-    filename = ".\data\\raceResults_447.txt"
-
     if (filename != None):
         with open(filename, "r") as input_file:
             input_data = input_file.read()
