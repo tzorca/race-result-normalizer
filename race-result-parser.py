@@ -6,8 +6,10 @@ RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 def parse_results(raw_data):
     header_lines = get_header(raw_data)
     field_defs = get_field_defs(header_lines)
+    result_lines = filter_to_result_lines(header_lines, field_defs, raw_data)
 
-    print fields
+    return result_lines
+    # return get_mapped_dataset(field_defs, result_lines)
 
 def get_header(raw_data):
     header_lines = None
@@ -48,13 +50,35 @@ def get_field_defs(header_lines):
 
     return field_defs
 
+# Removes lines that aren't the right length or that have significantly different symbol distributions
+def filter_to_result_lines(header_lines, raw_data):
+    lines = raw_data.splitlines(True)
+    result_lines = []
+
+    # Start by eliminating header lines
+    result_lines = [line for line in lines if not any(header == line for header in header_lines)]
+
+    # Next, save only lines that are the same length as a header line
+    expected_lengths = map(len, header_lines)
+    result_lines = [result for result in result_lines if any(len(result) == length for length in expected_lengths)]
+
+    # TODO: Finally, calculate and compare symbol distributions
+
+    return result_lines
+
+    # return result_lines
+
+
+# Place Name                     Bib#  Age S Guntime  Pace     
+# ===== ======================== ===== === = =======  =====
+def get_mapped_dataset(field_defs, result_lines):
+    return "TODO"
+
 DATA_DIRECTORY = "./data/"
 for filename in os.listdir(DATA_DIRECTORY):
     with open(DATA_DIRECTORY + filename, "r") as f:
-        parse_results(f.read())
-
-
-
-
+        lst = parse_results(f.read())
+        for ln in lst:
+            print ln
 
 
