@@ -13,8 +13,7 @@ def parse_results(raw_data):
     field_defs = get_field_defs(header_lines)
     result_lines = filter_to_result_lines(header_lines, raw_data)
 
-    return result_lines
-    # return get_mapped_dataset(field_defs, result_lines)
+    return get_mapped_results(field_defs, result_lines)
 
 def get_header(raw_data):
     header_lines = None
@@ -75,14 +74,27 @@ def filter_to_result_lines(header_lines, raw_data):
 
     return result_lines
 
-def get_mapped_dataset(field_defs, result_lines):
-    return "TODO"
+def get_mapped_results(field_defs, result_lines):
+    mapped_results = []
+
+    for line in result_lines:
+        mapped_result = {}
+
+        for field_def in field_defs:
+            name = field_def['name']
+            start = field_def['start']
+            end = field_def['end']
+
+            mapped_result[name] = line[start:end].strip()
+
+        mapped_results.append(mapped_result)
+
+    return mapped_results
 
 DATA_DIRECTORY = "./data/"
 for filename in os.listdir(DATA_DIRECTORY):
     with open(DATA_DIRECTORY + filename, "r") as f:
         lst = parse_results(f.read())
-        for ln in lst:
-            print ln
+        print lst
 
 
