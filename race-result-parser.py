@@ -92,16 +92,60 @@ def get_mapped_results(field_defs, result_lines):
 
     return mapped_results
 
-filename = None
-if (len(sys.argv) < 2):
-    script_name = os.path.basename(__file__)
-    print "Usage: " + script_name + " <filename>"
-else:
-    filename = sys.argv[1]
+def map_list_to_csv(map_list, separator):
+    column_indexes = {}
+    out_buffer = []
 
+    # Assign each key to a unique column index
+    for dictionary in map_list:
+        for key in dictionary:
+            if (key not in column_indexes):
+                column_indexes[key] = len(column_indexes)
 
-if (filename != None):
-    with open(filename, "r") as f:
-        print parse_results(f.read())
+    # Add header to output buffer
+    header = [""] * len(column_indexes)
+    for index, key in enumerate(column_indexes):
+        header[index] = key
+    out_buffer.append(separator.join(header))
+    out_buffer.append("\n")
 
+    # Add data to output buffer
+    for dictionary in map_list:
+        line = [""] * len(column_indexes)
 
+        for key in dictionary:
+            index = column_indexes[key]
+
+            line[index] = dictionary[key]
+
+        out_buffer.append(separator.join(line))
+        out_buffer.append("\n")
+
+    return ''.join(out_buffer)
+
+def main():
+    filename = None
+    if (len(sys.argv) < 2):
+        script_name = os.path.basename(__file__)
+        print "Usage: " + script_name + " <filename>"
+    else:
+        filename = sys.argv[1]
+
+    # TODO: Remove before committing
+    filename = ".\data\\raceResults_447.txt"
+
+    if (filename != None):
+        with open(filename, "r") as input_file:
+            input_data = input_file.read()
+        
+        mapped_results = parse_results(input_data)
+
+        # For now, just outputs mapped results to tab-separated value list
+        output_data = map_list_to_csv(mapped_results, "\t")
+
+        base_filename = os.path.splitext(filename)[0]
+        with open(base_filename + ".tsv", "w") as output_file:
+            output_file.write(output_data)
+
+if __name__ == "__main__":
+    main()
