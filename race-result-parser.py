@@ -59,15 +59,15 @@ def filter_to_result_lines(header_lines, raw_data):
 
     for line in lines:
 
-        # Start by eliminating header lines
+        # Skip header lines
         if (any(line == header for header in header_lines)):
             continue
 
-        # Next, eliminate lines whose length doesn't equal the header line's length
+        # Skip lines whose length doesn't equal the header line's length
         if (not any(len(line) == good_length for good_length in good_lengths)):
             continue
 
-        # Finally, remove lines matching known non-results patterns
+        # Skip lines matching known non-results patterns
         if (any(pattern.search(line) != None for pattern in NON_RESULT_PATTERNS)):
             continue
 
