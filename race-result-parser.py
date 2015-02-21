@@ -52,23 +52,22 @@ def get_field_defs(header_lines):
 
     return field_defs
 
-
-# Removes non-result lines
 def filter_to_result_lines(header_lines, raw_data):
     lines = raw_data.splitlines(True)
-    temp_lines = []
-
-    # Start by eliminating header lines
-    temp_lines = [line for line in lines if not any(line == header for header in header_lines)]
-
-    # Next, save only lines that are the same length as a header line
     good_lengths = map(len, header_lines)
-    temp_lines = [line for line in temp_lines if any(len(line) == length for length in good_lengths)]
-
-    # Finally, remove lines matching known non-results patterns
     result_lines = []
-    for line in temp_lines:
 
+    for line in lines:
+
+        # Start by eliminating header lines
+        if (any(line == header for header in header_lines)):
+            continue
+
+        # Next, eliminate lines whose length doesn't equal the header line's length
+        if (not any(len(line) == good_length for good_length in good_lengths)):
+            continue
+
+        # Finally, remove lines matching known non-results patterns
         if (any(pattern.search(line) != None for pattern in NON_RESULT_PATTERNS)):
             continue
 
@@ -76,11 +75,6 @@ def filter_to_result_lines(header_lines, raw_data):
 
     return result_lines
 
-    # return result_lines
-
-
-# Place Name                     Bib#  Age S Guntime  Pace     
-# ===== ======================== ===== === = =======  =====
 def get_mapped_dataset(field_defs, result_lines):
     return "TODO"
 
