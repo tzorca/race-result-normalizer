@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
@@ -91,10 +92,16 @@ def get_mapped_results(field_defs, result_lines):
 
     return mapped_results
 
-DATA_DIRECTORY = "./data/"
-for filename in os.listdir(DATA_DIRECTORY):
-    with open(DATA_DIRECTORY + filename, "r") as f:
-        lst = parse_results(f.read())
-        print lst
+filename = None
+if (len(sys.argv) < 2):
+    script_name = os.path.basename(__file__)
+    print "Usage: " + script_name + " <filename>"
+else:
+    filename = sys.argv[1]
+
+
+if (filename != None):
+    with open(filename, "r") as f:
+        print parse_results(f.read())
 
 
