@@ -91,36 +91,34 @@ def get_mapped_results(field_defs, result_lines):
 
     return mapped_results
 
-def map_list_to_csv(map_list, separator):
-    column_indexes = {}
+def map_list_to_csv(rows, separator):
+    field_indexes = {}
     out_buffer = []
 
-    # Assign each key to a unique column index
-    for dictionary in map_list:
-        for key in dictionary:
-            if (key not in column_indexes):
-                column_indexes[key] = len(column_indexes)
+    # Assign a unique index to each fieldName 
+    for row in rows:
+        for fieldName in row:
+            if (fieldName not in field_indexes):
+                field_indexes[fieldName] = len(field_indexes)
 
-    # Add header to output buffer
-    header = [""] * len(column_indexes)
-    for index, key in enumerate(column_indexes):
-        header[index] = key
+    # Append header to output
+    header = [""] * len(field_indexes)
+    for fieldName in field_indexes:
+        index = field_indexes[fieldName]
+        header[index] = fieldName
     out_buffer.append(separator.join(header))
-    out_buffer.append("\n")
+    
+    # Append data
+    for row in rows:
+        line = [""] * len(field_indexes)
 
-    # Add data to output buffer
-    for dictionary in map_list:
-        line = [""] * len(column_indexes)
-
-        for key in dictionary:
-            index = column_indexes[key]
-
-            line[index] = dictionary[key]
+        for fieldName in row:
+            index = field_indexes[fieldName]
+            line[index] = row[fieldName]
 
         out_buffer.append(separator.join(line))
-        out_buffer.append("\n")
 
-    return ''.join(out_buffer)
+    return '\n'.join(out_buffer)
 
 def main():
     if (len(sys.argv) < 2):
