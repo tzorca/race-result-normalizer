@@ -13,7 +13,6 @@ def parse_results(raw_data):
     header_lines = get_header(raw_data)
     field_defs = get_field_defs(header_lines)
     result_lines = filter_to_result_lines(header_lines, raw_data)
-
     return get_mapped_results(field_defs, result_lines)
 
 def get_header(raw_data):
@@ -54,11 +53,11 @@ def get_field_defs(header_lines):
 
 def filter_to_result_lines(header_lines, raw_data):
     lines = raw_data.splitlines(True)
-    good_lengths = map(len, header_lines)
+    good_lengths = list(map(len, header_lines))
+        
     result_lines = []
 
     for line in lines:
-
         # Skip header lines
         if (any(line == header for header in header_lines)):
             continue
@@ -66,7 +65,7 @@ def filter_to_result_lines(header_lines, raw_data):
         # Skip lines whose length doesn't equal the header line's length
         if (not any(len(line) == good_length for good_length in good_lengths)):
             continue
-
+        
         # Skip lines matching known non-results patterns
         if (any(pattern.search(line) != None for pattern in NON_RESULT_PATTERNS)):
             continue
@@ -124,14 +123,11 @@ def map_list_to_csv(map_list, separator):
     return ''.join(out_buffer)
 
 def main():
-    filename = None
     if (len(sys.argv) < 2):
         script_name = os.path.basename(__file__)
         print ("Usage: " + script_name + " <filename>")
     else:
         filename = sys.argv[1]
-
-    if (filename != None):
         with open(filename, "r") as input_file:
             input_data = input_file.read()
         
