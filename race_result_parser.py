@@ -127,7 +127,7 @@ def main():
     filename = None
     if (len(sys.argv) < 2):
         script_name = os.path.basename(__file__)
-        print "Usage: " + script_name + " <filename>"
+        print ("Usage: " + script_name + " <filename>")
     else:
         filename = sys.argv[1]
 
