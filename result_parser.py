@@ -1,6 +1,4 @@
-import os
 import re
-import sys
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
@@ -91,52 +89,3 @@ def get_mapped_results(field_defs, result_lines):
 
     return mapped_results
 
-def map_list_to_csv(rows, separator):
-    field_indexes = {}
-    out_buffer = []
-
-    # Assign a unique index to each fieldName 
-    for row in rows:
-        for fieldName in row:
-            if (fieldName not in field_indexes):
-                field_indexes[fieldName] = len(field_indexes)
-
-    # Append header to output
-    header = [""] * len(field_indexes)
-    for fieldName in field_indexes:
-        index = field_indexes[fieldName]
-        header[index] = fieldName
-    out_buffer.append(separator.join(header))
-    
-    # Append data
-    for row in rows:
-        line = [""] * len(field_indexes)
-
-        for fieldName in row:
-            index = field_indexes[fieldName]
-            line[index] = row[fieldName]
-
-        out_buffer.append(separator.join(line))
-
-    return '\n'.join(out_buffer)
-
-def main():
-    if (len(sys.argv) < 2):
-        script_name = os.path.basename(__file__)
-        print ("Usage: " + script_name + " <filename>")
-    else:
-        filename = sys.argv[1]
-        with open(filename, "r") as input_file:
-            input_data = input_file.read()
-        
-        mapped_results = parse_results(input_data)
-
-        # For now, just outputs mapped results to tab-separated value list
-        output_data = map_list_to_csv(mapped_results, "\t")
-
-        base_filename = os.path.splitext(filename)[0]
-        with open(base_filename + ".tsv", "w") as output_file:
-            output_file.write(output_data)
-
-if __name__ == "__main__":
-    main()
