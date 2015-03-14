@@ -1,6 +1,6 @@
-# race-result-parser
+# race-result-normalizer
 Converts fixed-width race results to a tab-separated value list.
 
-Usage: race-result-parser.py <filename>
+Usage: race-result-normalizer.py <filename>
 
 Output file will have the same directory and filename, but with a .tsv extension.
