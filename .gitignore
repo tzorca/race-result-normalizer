@@ -2,3 +2,4 @@ data
 /.project
 /.pydevproject
 /__pycache__
+secure_settings.py
