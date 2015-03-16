@@ -11,18 +11,16 @@ def create_table(db_connection: pymysql.Connection, table_def):
 
     sql += ");"
     
-    try:
-        cursor = db_connection.cursor()
-        cursor.execute(sql)
-    except Exception as e:
-        print(sql)
-        print(e)
+    cursor = db_connection.cursor()
+    cursor.execute(sql)
     cursor.close()
+    db_connection.commit()
     
 def drop_table(db_connection: pymysql.Connection, table_name):
     cursor = db_connection.cursor()
     cursor.execute("drop table if exists `%s`" % (table_name)) 
     cursor.close()
+    db_connection.commit()
 
             
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
@@ -54,6 +52,7 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
         cursor.execute("insert into " + table_def["name"] + " " + column_names_string + 
                        " values " + placeholders_string + ";", parameters)
     cursor.close()
+    db_connection.commit()
 
             
 IDENTIFIER_VALIDATOR = re.compile(r'^[0-9a-zA-Z_\$]+$');

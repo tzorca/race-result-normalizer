@@ -29,7 +29,6 @@ def save_to_db(mapped_results):
     mysql_helper.drop_table(db_connection, settings.TABLE_DEFS["result"]["name"])
     mysql_helper.create_table(db_connection, settings.TABLE_DEFS["result"])
     mysql_helper.insert_rows(db_connection, settings.TABLE_DEFS["result"], mapped_results)
-    db_connection.commit()
     db_connection.close()
 
 def save_to_tsv_file(filename, mapped_results):
