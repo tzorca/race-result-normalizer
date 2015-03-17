@@ -2,16 +2,43 @@ import re
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
-NON_RESULT_PATTERNS = [
-    re.compile(r'\*{4,}'),
-    re.compile(r' {30,}')
-]
+STATES = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
+LOCATION_PATTERN = re.compile(r'^\s*[A-Za-z ]{3,}, ' + STATES + r'.*$')
+
+MONTHS = "(January|February|March|April|May|June|July|August|September|October|November|December)"
+YEAR = r'2\d{3}'
+DATE_PATTERN = re.compile(MONTHS + r' ?\d+, ?' + YEAR)
+
+DIST_UNIT_NAMES = "(kilometer|k|miler|miles|mile|mi)"
+
+PAGE_NUM_PATTERN = re.compile(r'^\s*page \d+$', re.IGNORECASE)
+
+def get_race_info(non_result_lines):
+    race_info = {}
+    for i in range(0, len(non_result_lines)):
+        line = non_result_lines[i]
+        if (DATE_PATTERN.search(line) is not None):
+            if ("date_line" not in race_info):
+                race_info["date_line"] = line
+        elif (LOCATION_PATTERN.match(line) is not None):
+            if ("location_line" not in race_info):
+                race_info["location_line"] = line
+        elif (PAGE_NUM_PATTERN.match(line) is not None):
+            continue
+        else:
+            # The race name line should be the first line after filtering out the above
+            if ("name_line" not in race_info):
+                race_info["name_line"] = line
+    return race_info
 
 def parse_results(raw_data):
     header_lines = get_header(raw_data)
     field_defs = get_field_defs(header_lines)
-    result_lines = filter_to_result_lines(header_lines, raw_data)
-    return get_mapped_results(field_defs, result_lines)
+    result_lines = filter_to_result_lines(header_lines, raw_data, False)
+    mapped_results= get_mapped_results(field_defs, result_lines)
+    race_info = get_race_info(filter_to_result_lines(header_lines, raw_data, True))
+    
+    return {"race_info": race_info, "results": mapped_results}
 
 def get_header(raw_data):
     header_lines = None
@@ -49,23 +76,20 @@ def get_field_defs(header_lines):
 
     return field_defs
 
-def filter_to_result_lines(header_lines, raw_data):
+
+def filter_to_result_lines(header_lines, raw_data, invert: bool):
     lines = raw_data.splitlines(True)
     good_lengths = list(map(len, header_lines))
         
     result_lines = []
 
     for line in lines:
-        # Skip header lines
+        # Skip header lines (Even when inverting)
         if (any(line == header for header in header_lines)):
             continue
 
         # Skip lines whose length doesn't equal the header line's length
-        if (not any(len(line) == good_length for good_length in good_lengths)):
-            continue
-        
-        # Skip lines matching known non-results patterns
-        if (any(pattern.search(line) != None for pattern in NON_RESULT_PATTERNS)):
+        if (any(len(line) == good_length for good_length in good_lengths) == invert):
             continue
 
         result_lines.append(line)
@@ -89,3 +113,9 @@ def get_mapped_results(field_defs, result_lines):
 
     return mapped_results
 
+    
+    
+    
+    
+    
+    
