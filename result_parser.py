@@ -3,32 +3,45 @@ import re
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
 STATES = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
-LOCATION_PATTERN = re.compile(r'^\s*[A-Za-z ]{3,}, ' + STATES + r'.*$')
-
 MONTHS = "(January|February|March|April|May|June|July|August|September|October|November|December)"
 YEAR = r'2\d{3}'
-DATE_PATTERN = re.compile(MONTHS + r' ?\d+, ?' + YEAR)
+DIST_UNITS = "(kilometer|k|miler|miles|mile|mi)"
 
-DIST_UNIT_NAMES = "(kilometer|k|miler|miles|mile|mi)"
+TIME_PATTERN = re.compile(r'\d{2}:\d{2} (A|P)M')
 
-PAGE_NUM_PATTERN = re.compile(r'^\s*page \d+$', re.IGNORECASE)
+EXCLUDED_PATTERNS = [
+    # Page Number
+    re.compile(r'^\s*page \d+$', re.IGNORECASE)
+]
+
+
+RACE_INFO_PATTERNS = {
+    'date': re.compile(MONTHS + r' ?\d+, ?' + YEAR),
+    'location': re.compile(r'^\s*[A-Za-z ]{3,}, ' + STATES + r'.*$')
+}
+
+def is_relevant_race_line(line):
+    return not any(pattern.match(line) is not None for pattern in EXCLUDED_PATTERNS)
 
 def get_race_info(non_result_lines):
-    race_info = {}
-    for i in range(0, len(non_result_lines)):
-        line = non_result_lines[i]
-        if (DATE_PATTERN.search(line) is not None):
-            if ("date_line" not in race_info):
-                race_info["date_line"] = line
-        elif (LOCATION_PATTERN.match(line) is not None):
-            if ("location_line" not in race_info):
-                race_info["location_line"] = line
-        elif (PAGE_NUM_PATTERN.match(line) is not None):
-            continue
-        else:
+    info_lines = {}
+    
+    race_info_lines = filter(is_relevant_race_line, non_result_lines)
+    
+    for line in race_info_lines:
+        pattern_matched = False
+        for pattern_name, pattern in RACE_INFO_PATTERNS.items():
+            if pattern.search(line) is not None:
+                pattern_matched = True
+                if pattern_name not in info_lines:
+                    info_lines[pattern_name] = line
+                break
+        
+        if not pattern_matched and "name" not in info_lines:
             # The race name line should be the first line after filtering out the above
-            if ("name_line" not in race_info):
-                race_info["name_line"] = line
+            info_lines["name"] = line
+        
+    race_info = {}
     return race_info
 
 def parse_results(raw_data):
