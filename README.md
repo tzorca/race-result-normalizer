@@ -1,5 +1,5 @@
 # race-result-normalizer
-Converts fixed-width race results to a tab-separated value list.
+Converts text-based fixed-width race result files to a csv-style files. Also exports to tables in MySQL database.
 
 Usage: race-result-normalizer.py <filename>
 
