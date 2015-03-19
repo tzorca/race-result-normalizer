@@ -2,56 +2,6 @@ import re
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
-STATES = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
-MONTHS = "(January|February|March|April|May|June|July|August|September|October|November|December)"
-YEAR = r'2\d{3}'
-DIST_UNITS = "(kilometer|k|miler|miles|mile|mi)"
-
-TIME_PATTERN = re.compile(r'\d{2}:\d{2} (A|P)M')
-
-EXCLUDED_PATTERNS = [
-    # Page Number
-    re.compile(r'^\s*page \d+$', re.IGNORECASE)
-]
-
-
-RACE_INFO_PATTERNS = {
-    'date': re.compile(MONTHS + r' ?\d+, ?' + YEAR),
-    'location': re.compile(r'^\s*[A-Za-z ]{3,}, ' + STATES + r'.*$')
-}
-
-def is_relevant_race_line(line):
-    return not any(pattern.match(line) is not None for pattern in EXCLUDED_PATTERNS)
-
-def get_race_info(non_result_lines):
-    info_lines = {}
-    
-    race_info_lines = filter(is_relevant_race_line, non_result_lines)
-    
-    for line in race_info_lines:
-        pattern_matched = False
-        for pattern_name, pattern in RACE_INFO_PATTERNS.items():
-            if pattern.search(line) is not None:
-                pattern_matched = True
-                if pattern_name not in info_lines:
-                    info_lines[pattern_name] = line
-                break
-        
-        if not pattern_matched and "name" not in info_lines:
-            # The race name line should be the first line after filtering out the above
-            info_lines["name"] = line
-        
-    race_info = {}
-    return race_info
-
-def parse_results(raw_data):
-    header_lines = get_header(raw_data)
-    field_defs = get_field_defs(header_lines)
-    result_lines = filter_to_result_lines(header_lines, raw_data, False)
-    mapped_results= get_mapped_results(field_defs, result_lines)
-    race_info = get_race_info(filter_to_result_lines(header_lines, raw_data, True))
-    
-    return {"race_info": race_info, "results": mapped_results}
 
 def get_header(raw_data):
     header_lines = None
@@ -61,7 +11,7 @@ def get_header(raw_data):
     for line in lines:
         match = RESULTS_HEADER_SEPARATOR_PATTERN.match(line)
 
-        if (match is not None):
+        if match:
             header_lines = [lines[line_num-1], line]
             break
 
@@ -126,7 +76,6 @@ def get_mapped_results(field_defs, result_lines):
 
     return mapped_results
 
-    
     
     
     

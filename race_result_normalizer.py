@@ -1,6 +1,6 @@
 import os
 import sys
-import result_parser
+import overall_parser
 import pymysql
 import mysql_helper
 import settings
@@ -16,7 +16,7 @@ def main():
         with open(filename, "r") as input_file:
             input_data = input_file.read()
          
-        parse_output = result_parser.parse_results(input_data)
+        parse_output = overall_parser.parse_results(input_data)
         mapped_results = parse_output["results"]
         race_info = parse_output["race_info"]
         
