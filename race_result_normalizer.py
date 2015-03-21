@@ -17,19 +17,20 @@ def main():
             input_data = input_file.read()
          
         parse_output = overall_parser.parse_results(input_data)
-        mapped_results = parse_output["results"]
+        results = parse_output["results"]
         race_info = parse_output["race_info"]
         
-        save_to_tsv_file(os.path.splitext(filename)[0] + ".tsv", mapped_results)
-        save_to_db(mapped_results)
+        save_to_tsv_file(os.path.splitext(filename)[0] + ".tsv", results)
+        save_to_db(results, settings.TABLE_DEFS["result"])
+        save_to_db(race_info, settings.TABLE_DEFS["race"])
         print("Finished.")
 
-def save_to_db(mapped_results):
+def save_to_db(dataset, table_def):
     db_connection = pymysql.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD, database=DB_DATABASE)
     
-    mysql_helper.drop_table(db_connection, settings.TABLE_DEFS["result"]["name"])
-    mysql_helper.create_table(db_connection, settings.TABLE_DEFS["result"])
-    mysql_helper.insert_rows(db_connection, settings.TABLE_DEFS["result"], mapped_results)
+    mysql_helper.drop_table(db_connection, table_def["name"])
+    mysql_helper.create_table(db_connection, table_def)
+    mysql_helper.insert_rows(db_connection, table_def, dataset)
     
     db_connection.close()
 

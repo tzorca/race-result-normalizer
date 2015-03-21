@@ -53,15 +53,15 @@ def get_race_info(non_result_lines):
                 
                 if line_name not in matched_lines:
                     matched_lines.append(line_name)
-                
+
                 for component in line_breakdown['components']:    
                     match = component['pattern'].search(line)
                     if match:
                         race_info[component['name']] = match.group(0).strip()
                 break
         
-        if not line_matched and "race_name" not in race_info:
+        if not line_matched and "name" not in race_info:
             # The race name line should be the first line after filtering out the above
-            race_info["race_name"] = line.strip()
+            race_info["name"] = line.strip()
         
-    return race_info
+    return [race_info]

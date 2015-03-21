@@ -5,8 +5,9 @@ def create_table(db_connection: pymysql.Connection, table_def):
     sql = "create table if not exists `%s` (" % (table_def["name"])
 
     column_def_strings = []
-    for column_def in table_def["columns"]:
-        column_def_strings.append("%s %s" % (column_def["name"], column_def["type"]))
+    column_defs = table_def["columns"]
+    for column_name in column_defs:
+        column_def_strings.append("%s %s" % (column_name, column_defs[column_name]["type"]))
     sql += ",".join(column_def_strings);
 
     sql += ");"
@@ -26,23 +27,24 @@ def drop_table(db_connection: pymysql.Connection, table_name):
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
     column_renames = table_def["column_renames"]
     column_defs = table_def["columns"]
-    
+
     for row in rows:
         column_names = []
         parameters = []
         placeholders = []
         
         for column_name in row:
+            field_value = row[column_name]
             if (column_name in column_renames):
                 column_name = column_renames[column_name]
-            
+
             if (column_name not in column_defs):
                 continue
                 
             validate_identifier(column_name)
             
             column_names.append(column_name)
-            parameters.append(row[column_name])
+            parameters.append(field_value)
             placeholders.append("%s")
         
         column_names_string = "(" + ",".join(column_names) + ")"
