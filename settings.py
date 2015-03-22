@@ -1,41 +1,43 @@
 TABLE_DEFS = {
-	"result": {
-		"name": "result",
-		"columns": {
-			"age": {"type": "Text"},
-			"bib_num": {"type": "Text"},
-			"division": {"type": "Text"},
-			"division_total": {"type": "Text"},
-			"gun_time": {"type": "Text"},
-			"runner_name": {"type": "Text"},
-			"net_time": {"type": "Text"},
-			"place": {"type": "Text"},
-			"time": {"type": "Text"}
-		},
-		"column_renames": {
-			"Ag": "age",
-			"Age": "age",
-			"Bib#": "bib_num",
-			"Div": "division",
-			"Div/Tot": "division_total",
-			"Guntime": "gun_time",
-			"Name": "runner_name",
-			"Nettime": "net_time",
-			"Place": "place",
-			"S": "sex",
-			"Time": "time"
-		}
-	},
-			
-	"race": {
-		"name": "race",
-		"columns": {
-			"date": {"type": "Text"},
-			"time": {"type": "Text"},
-			"name": {"type": "Text"},
-			"location": {"type": "Text"}
-		},
-		"column_renames": {
-		}
-	},
+    "result": {
+        "name": "result",
+        "columns": {
+            "id": "int not null primary key auto_increment",
+            "age": "text",
+            "bib_num": "text",
+            "division": "text",
+            "division_total": "text",
+            "gun_time": "text",
+            "runner_name": "text",
+            "net_time": "text",
+            "place": "text",
+            "time": "Text"
+        },
+        "column_renames": {
+            "Ag": "age",
+            "Age": "age",
+            "Bib#": "bib_num",
+            "Div": "division",
+            "Div/Tot": "division_total",
+            "Guntime": "gun_time",
+            "Name": "runner_name",
+            "Nettime": "net_time",
+            "Place": "place",
+            "S": "sex",
+            "Time": "time"
+        },
+    },
+            
+    "race": {
+        "name": "race",
+        "columns": {
+            "id": "int not null primary key auto_increment",
+            "date": "text",
+            "time": "text",
+            "name": "text",
+            "location": "text"
+        },
+        "column_renames": {
+        }
+    },
 }

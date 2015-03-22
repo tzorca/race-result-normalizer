@@ -7,7 +7,7 @@ def create_table(db_connection: pymysql.Connection, table_def):
     column_def_strings = []
     column_defs = table_def["columns"]
     for column_name in column_defs:
-        column_def_strings.append("%s %s" % (column_name, column_defs[column_name]["type"]))
+        column_def_strings.append("%s %s" % (column_name, column_defs[column_name]))
     sql += ",".join(column_def_strings);
 
     sql += ");"
