@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timedelta
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
@@ -76,8 +77,28 @@ def get_mapped_results(field_defs, result_lines):
 
     return mapped_results
 
-    
-    
-    
+TIME_FIELDS = ["Time", "Guntime", "Nettime"]
+
+def normalize(mapped_results):
+    for row in mapped_results:
+        for time_field in TIME_FIELDS:
+            if time_field in row:
+                row[time_field] = normalize_time(row[time_field])
+    return mapped_results
+
+def normalize_time(time_str):
+    colon_count = time_str.count(":")
+    if (colon_count == 2):
+        t = datetime.strptime(time_str,"%H:%M:%S")
+        return datetime_to_timedelta(t).total_seconds()/60.0
+    elif (colon_count == 1):
+        t = datetime.strptime(time_str,"%M:%S")
+        return datetime_to_timedelta(t).total_seconds()/60.0
+    else:
+        print("Could not normalize time " + time_str)
+        return -1
+
+def datetime_to_timedelta(dt):
+    return timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
     
     

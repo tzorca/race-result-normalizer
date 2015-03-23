@@ -21,7 +21,7 @@ def rows_to_csv(rows, separator):
 
         for fieldName in row:
             index = field_indexes[fieldName]
-            line[index] = row[fieldName]
+            line[index] = str(row[fieldName])
 
         out_buffer.append(separator.join(line))
 

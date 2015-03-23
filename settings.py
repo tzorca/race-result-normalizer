@@ -7,11 +7,11 @@ TABLE_DEFS = {
             "bib_num": "text",
             "division": "text",
             "division_total": "text",
-            "gun_time": "text",
+            "gun_time": "decimal(7,4)",
             "runner_name": "text",
-            "net_time": "text",
+            "net_time": "decimal(7,4)",
             "place": "text",
-            "time": "Text"
+            "time": "decimal(7,4)"
         },
         "column_renames": {
             "Ag": "age",
