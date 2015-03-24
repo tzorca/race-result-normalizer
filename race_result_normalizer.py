@@ -10,17 +10,16 @@ from secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
 def main():
     if (len(sys.argv) < 2):
         script_name = os.path.basename(__file__)
-        print ("Usage: " + script_name + " <filename>")
+        print ("Usage: " + script_name + " <directory>")
     else:
-        filename = sys.argv[1]
-        with open(filename, "r") as input_file:
-            input_data = input_file.read()
+        path = sys.argv[1]
+        filenames = [os.path.join(path,fn) for fn in os.listdir(path)] 
          
-        parse_output = overall_parser.parse_results(input_data)
+        parse_output = overall_parser.parse_multiple_results_files(filenames)
         results = parse_output["results"]
         race_info = parse_output["race_info"]
         
-        save_to_tsv_file(os.path.splitext(filename)[0] + ".tsv", results)
+        save_to_tsv_file("all_results.tsv", results)
         save_to_db(results, settings.TABLE_DEFS["result"])
         save_to_db(race_info, settings.TABLE_DEFS["race"])
         print("Finished.")

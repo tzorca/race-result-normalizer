@@ -64,4 +64,4 @@ def get_race_info(non_result_lines):
             # The race name line should be the first line after filtering out the above
             race_info["name"] = line.strip()
         
-    return [race_info]
+    return race_info

@@ -11,7 +11,8 @@ TABLE_DEFS = {
             "runner_name": "text",
             "net_time": "decimal(7,4)",
             "place": "text",
-            "time": "decimal(7,4)"
+            "time": "decimal(7,4)",
+            "race_id": "integer"
         },
         "column_renames": {
             "Ag": "age",
@@ -31,7 +32,7 @@ TABLE_DEFS = {
     "race": {
         "name": "race",
         "columns": {
-            "id": "int not null primary key auto_increment",
+            "id": "int not null primary key",
             "date": "text",
             "time": "text",
             "name": "text",
