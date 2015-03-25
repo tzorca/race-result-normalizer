@@ -10,6 +10,8 @@ TIME_PATTERN = re.compile(r'\d{1,2}:\d{2} ?(A|P)M')
 DATE_PATTERN = re.compile(MONTHS + r' ?\d+, ?' + YEAR)
 LOCATION_PATTERN = re.compile(r'^\s*[A-Za-z ]{3,}, ' + STATES + r'.*$')
 
+PAREN_BLOCK_PATTERN = re.compile(r'\(.*?\)')
+
 EXCLUDED_PATTERNS = [
     # Page Number
     re.compile(r'^\s*page \d+$', re.IGNORECASE)
@@ -19,7 +21,7 @@ EXCLUDED_PATTERNS = [
 # Components have patterns for matching actual race information pieces within a line
 RACE_INFO_PATTERNS = [
     {
-        'name':'date_time',
+        'name': 'date_time',
         'pattern': DATE_PATTERN,
         'components': [
             {'name':'date', 'pattern': DATE_PATTERN},
@@ -27,7 +29,7 @@ RACE_INFO_PATTERNS = [
         ]
     },
     {
-        'name':'location',
+        'name': 'location',
         'pattern': LOCATION_PATTERN,
         'components': [
             {'name':'location', 'pattern': LOCATION_PATTERN}
@@ -63,5 +65,11 @@ def get_race_info(non_result_lines):
         if not line_matched and "name" not in race_info:
             # The race name line should be the first line after filtering out the above
             race_info["name"] = line.strip()
+    
+    
+    # Remove unimportant parenthetical information
+    # (Important information will have already been captured) 
+    for info_name in race_info:
+        race_info[info_name] = PAREN_BLOCK_PATTERN.sub('', race_info[info_name])
         
     return race_info
