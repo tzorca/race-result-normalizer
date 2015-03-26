@@ -33,7 +33,7 @@ TABLE_DEFS = {
         "name": "race",
         "columns": {
             "id": "int not null primary key",
-            "date": "text",
+            "date": "date",
             "time": "text",
             "name": "text",
             "location": "text"

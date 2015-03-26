@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 STATES = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
 MONTHS = "(January|February|March|April|May|June|July|August|September|October|November|December)"
@@ -73,3 +74,13 @@ def get_race_info(non_result_lines):
         race_info[info_name] = PAREN_BLOCK_PATTERN.sub('', race_info[info_name])
         
     return race_info
+
+
+DATE_FORMAT = "%B %d, %Y"
+
+def normalize(race_info):
+    if ('date' in race_info):
+        race_info['date'] = datetime.strptime(race_info['date'],DATE_FORMAT)
+
+
+

@@ -32,6 +32,7 @@ def parse_results_file(filename, race_id):
     mapped_results = result_parser.normalize(mapped_results)
     add_to_each_row(mapped_results, {"race_id":race_id})
     race_info = race_parser.get_race_info(result_parser.filter_to_result_lines(header_lines, data_from_file, True))
+    race_parser.normalize(race_info)
     race_info['id'] = race_id
     
     return {"race_info": race_info, "results": mapped_results}
