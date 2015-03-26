@@ -34,7 +34,7 @@ TABLE_DEFS = {
         "columns": {
             "id": "int not null primary key",
             "date": "date",
-            "time": "text",
+            "time": "time",
             "name": "text",
             "location": "text"
         },

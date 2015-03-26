@@ -1,4 +1,5 @@
 import re
+import time
 from datetime import datetime
 
 STATES = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
@@ -77,10 +78,21 @@ def get_race_info(non_result_lines):
 
 
 DATE_FORMAT = "%B %d, %Y"
+TIME_FORMATS = ["%I:%M %p", "%I:%M%p"]
+
 
 def normalize(race_info):
     if ('date' in race_info):
         race_info['date'] = datetime.strptime(race_info['date'],DATE_FORMAT)
 
-
+    if ('time' in race_info):
+        time_str = race_info['time']
+        race_info['time'] = None
+        for time_format in TIME_FORMATS:
+            try:
+                race_info['time'] = time.strptime(time_str, time_format)
+            except ValueError:
+                pass
+            else:
+                break            
 
