@@ -2,15 +2,16 @@ import re
 import time
 from datetime import datetime
 
-STATES = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
-MONTHS = "(January|February|March|April|May|June|July|August|September|October|November|December)"
+STATE = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
+MONTH = "(January|February|March|April|May|June|July|August|September|October|November|December)"
 YEAR = r'2\d{3}'
-DIST_UNITS = "(kilometer|k|miler|miles|mile|mi)"
+DIST_UNIT = "(kilometer|k|miler|miles|mile|mi)"
 
 ALL_PATTERN = re.compile('.*')
 TIME_PATTERN = re.compile(r'\d{1,2}:\d{2} ?(A|P)M')
-DATE_PATTERN = re.compile(MONTHS + r' ?\d+, ?' + YEAR)
-LOCATION_PATTERN = re.compile(r'^\s*[A-Za-z ]{3,}, ' + STATES + r'.*$')
+DATE_PATTERN = re.compile(MONTH + r' ?\d+, ?' + YEAR)
+LOCATION_PATTERN = re.compile(r'^\s*[A-Za-z ]{3,}, ' + STATE)
+CERTIFICATION_PATTERN = re.compile(r'(?<=\().*(?=\))')
 
 PAREN_BLOCK_PATTERN = re.compile(r'\(.*?\)')
 
@@ -34,7 +35,8 @@ RACE_INFO_PATTERNS = [
         'name': 'location',
         'pattern': LOCATION_PATTERN,
         'components': [
-            {'name':'location', 'pattern': LOCATION_PATTERN}
+            {'name':'location', 'pattern': LOCATION_PATTERN},
+            {'name':'certification', 'pattern': CERTIFICATION_PATTERN}
         ]
     },
 ]

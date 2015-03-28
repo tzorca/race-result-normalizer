@@ -36,7 +36,8 @@ TABLE_DEFS = {
             "date": "date",
             "time": "time",
             "name": "text",
-            "location": "text"
+            "location": "text",
+            "certification": "text"
         },
         "column_renames": {
         }
