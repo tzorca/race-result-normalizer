@@ -15,7 +15,7 @@ def main():
         path = sys.argv[1]
         filenames = [os.path.join(path,fn) for fn in os.listdir(path)] 
          
-        parse_output = overall_parser.parse_multiple_results_files(filenames)
+        parse_output = overall_parser.parse_files(filenames)
         results = parse_output["results"]
         race_info = parse_output["race_info"]
         
