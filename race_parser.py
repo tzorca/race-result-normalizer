@@ -79,13 +79,21 @@ def get_race_info(non_result_lines):
     return race_info
 
 
-DATE_FORMAT = "%B %d, %Y"
+DATE_FORMATS = ["%B %d, %Y", "%B %d,%Y"] 
 TIME_FORMATS = ["%I:%M %p", "%I:%M%p"]
 
 
 def normalize(race_info):
     if ('date' in race_info):
-        race_info['date'] = datetime.strptime(race_info['date'],DATE_FORMAT)
+        date_str = race_info['date']
+        race_info['date'] = None
+        for date_format in DATE_FORMATS:
+            try:
+                race_info['date'] = time.strptime(date_str, date_format)
+            except ValueError:
+                pass
+            else:
+                break
 
     if ('time' in race_info):
         time_str = race_info['time']
@@ -96,5 +104,5 @@ def normalize(race_info):
             except ValueError:
                 pass
             else:
-                break            
+                break   
 

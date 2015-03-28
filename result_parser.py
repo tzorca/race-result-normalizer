@@ -88,16 +88,24 @@ def normalize(mapped_results):
 
 def normalize_time(time_str):
     colon_count = time_str.count(":")
-    if (colon_count == 2):
-        t = datetime.strptime(time_str,"%H:%M:%S")
+    
+    if colon_count == 1:
+        time_str = '0:' + time_str
+    elif colon_count != 2:
+        # Invalid time
+        print("Invalid time %s" % time_str)
+        return None
+    
+    if not '.' in time_str:
+        time_str += '.0'
+        
+    try:
+        t = datetime.strptime(time_str,"%H:%M:%S.%f")
         return datetime_to_timedelta(t).total_seconds()/60.0
-    elif (colon_count == 1):
-        t = datetime.strptime(time_str,"%M:%S")
-        return datetime_to_timedelta(t).total_seconds()/60.0
-    else:
-        print("Could not normalize time " + time_str)
-        return -1
-
+    except Exception as e:
+        print(e)
+        return None
+        
 def datetime_to_timedelta(dt):
     return timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
     
