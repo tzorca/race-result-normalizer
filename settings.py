@@ -8,10 +8,9 @@ TABLE_DEFS = {
             "division": "text",
             "division_total": "text",
             "gun_time": "decimal(7,4)",
-            "runner_name": "text",
             "net_time": "decimal(7,4)",
+            "runner_name": "text",
             "place": "text",
-            "time": "decimal(7,4)",
             "race_id": "integer"
         },
         "column_renames": {
@@ -25,7 +24,7 @@ TABLE_DEFS = {
             "Nettime": "net_time",
             "Place": "place",
             "S": "sex",
-            "Time": "time"
+            "Time": "gun_time"
         },
     },
             
