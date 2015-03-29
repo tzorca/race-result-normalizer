@@ -89,10 +89,13 @@ def normalize(mapped_results):
 def normalize_time(time_str):
     colon_count = time_str.count(":")
     
+    # Blank
+    if (len(time_str.strip()) == 0):
+        return None
+    
     if colon_count == 1:
         time_str = '0:' + time_str
     elif colon_count != 2:
-        # Invalid time
         print("Invalid time %s" % time_str)
         return None
     
