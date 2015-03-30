@@ -1,7 +1,20 @@
 import re
-from datetime import datetime, timedelta
+from helpers import field_normalizers, dict_helper
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
+
+def get_results(filename, header_lines, data_from_file):
+    field_defs = get_field_defs(header_lines)
+
+    result_lines = filter_to_result_lines(header_lines, data_from_file, False)
+    mapped_results = map_results(field_defs, result_lines)
+
+    if filter_bad_resultset(filename, mapped_results):
+        return None
+    
+    normalize(mapped_results)
+    
+    return mapped_results
 
 def get_header(raw_data):
     header_lines = None
@@ -16,7 +29,7 @@ def get_header(raw_data):
             break
 
         line_num += 1
-
+        
     return header_lines
 
 def get_field_defs(header_lines):
@@ -59,7 +72,7 @@ def filter_to_result_lines(header_lines, raw_data, invert: bool):
 
     return result_lines
 
-def get_mapped_results(field_defs, result_lines):
+def map_results(field_defs, result_lines):
     mapped_results = []
 
     for line in result_lines:
@@ -82,63 +95,24 @@ def normalize(mapped_results):
     for row in mapped_results:
         for time_field in TIME_FIELDS:
             if time_field in row:
-                row[time_field] = normalize_time(row[time_field])
+                row[time_field] = field_normalizers.time_string_to_minutes_decimal(row[time_field])
     return mapped_results
-
-def normalize_time(time_str):
-    colon_count = time_str.count(":")
-
-    # Blank
-    if (len(time_str.strip()) == 0):
-        return None
-
-    if colon_count == 1:
-        time_str = '0:' + time_str
-    elif colon_count != 2:
-        print("Invalid time %s" % time_str)
-        return None
-
-    if not '.' in time_str:
-        time_str += '.0'
-
-    try:
-        t = datetime.strptime(time_str, "%H:%M:%S.%f")
-        return datetime_to_timedelta(t).total_seconds() / 60.0
-    except Exception as e:
-        print(e)
-        return None
-
-def datetime_to_timedelta(dt):
-    return timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
-
-
-def get_blank_ratio(dicts, key_name):
-    blank_count = 0
-    for dictionary in dicts:
-        if not key_name in dictionary:
-            continue
-        if dictionary[key_name] is None:
-            blank_count += 1
-        elif len(str(dictionary[key_name]).strip()) == 0:
-            blank_count += 1
-
-    return blank_count / float(len(dicts))
 
 
 BLANK_CUTOFF_RATIO = 0.05
 def filter_bad_resultset(filename, resultset):
-    if (len(resultset) == 0):
+    if (not resultset or len(resultset) == 0):
         print("%s: No result entries found" % (filename))
         return True
 
-    blank_name_ratio = get_blank_ratio(resultset, "Name")
+    blank_name_ratio = dict_helper.get_blank_ratio(resultset, "Name")
     if (blank_name_ratio > BLANK_CUTOFF_RATIO):
         print("%s: %d%% names were parsed as blank" % (filename, blank_name_ratio * 100))
         return True
 
-    blank_time_ratio = get_blank_ratio(resultset, "Guntime")
-    blank_time_ratio += get_blank_ratio(resultset, "Nettime")
-    blank_time_ratio += get_blank_ratio(resultset, "Time")
+    blank_time_ratio = dict_helper.get_blank_ratio(resultset, "Guntime")
+    blank_time_ratio += dict_helper.get_blank_ratio(resultset, "Nettime")
+    blank_time_ratio += dict_helper.get_blank_ratio(resultset, "Time")
     if (blank_time_ratio > BLANK_CUTOFF_RATIO):
         print("%s: ~%d%% times were parsed as blank" % (filename, blank_time_ratio * 100))
         return True

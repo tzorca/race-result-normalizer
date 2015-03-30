@@ -1,5 +1,6 @@
-data
 /.project
 /.pydevproject
-/__pycache__
+__pycache__
 secure_settings.py
+*.tsv
+/data/

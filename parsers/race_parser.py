@@ -1,6 +1,5 @@
 import re
 import time
-from datetime import datetime
 
 STATE = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
 MONTH = "(January|February|March|April|May|June|July|August|September|October|November|December)"

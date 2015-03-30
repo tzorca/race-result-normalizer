@@ -51,8 +51,14 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
         placeholders_string = "(" + ",".join(placeholders)  + ")"
         
         cursor = db_connection.cursor()
-        cursor.execute("insert into " + table_def["name"] + " " + column_names_string + 
-                       " values " + placeholders_string + ";", parameters)
+        
+        insert_sql = "insert into " + table_def["name"] + " " + column_names_string + " values " + placeholders_string + ";"
+        try:
+            cursor.execute(insert_sql, parameters)
+        except Exception as e:
+            print(e)
+            print(insert_sql)
+            print(parameters)
     cursor.close()
     db_connection.commit()
 
