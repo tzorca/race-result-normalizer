@@ -27,7 +27,7 @@ TABLE_DEFS = {
             "Time": "gun_time"
         },
     },
-            
+
     "race": {
         "name": "race",
         "columns": {

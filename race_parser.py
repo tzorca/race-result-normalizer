@@ -47,39 +47,39 @@ def is_relevant_race_line(line):
 def get_race_info(non_result_lines):
     matched_lines = []
     race_info = {}
-    
+
     race_info_lines = filter(is_relevant_race_line, non_result_lines)
-    
+
     for line in race_info_lines:
         line_matched = False
         for line_breakdown in RACE_INFO_PATTERNS:
             line_name = line_breakdown['name']
             if line_breakdown['pattern'].search(line):
                 line_matched = True
-                
+
                 if line_name not in matched_lines:
                     matched_lines.append(line_name)
 
-                for component in line_breakdown['components']:    
+                for component in line_breakdown['components']:
                     match = component['pattern'].search(line)
                     if match:
                         race_info[component['name']] = match.group(0).strip()
                 break
-        
+
         if not line_matched and "name" not in race_info:
             # The race name line should be the first line after filtering out the above
             race_info["name"] = line.strip()
-    
-    
+
+
     # Remove unimportant parenthetical information
-    # (Important information will have already been captured) 
+    # (Important information will have already been captured)
     for info_name in race_info:
         race_info[info_name] = PAREN_BLOCK_PATTERN.sub('', race_info[info_name])
-        
+
     return race_info
 
 
-DATE_FORMATS = ["%B %d, %Y", "%B %d,%Y"] 
+DATE_FORMATS = ["%B %d, %Y", "%B %d,%Y"]
 TIME_FORMATS = ["%I:%M %p", "%I:%M%p"]
 
 
@@ -104,5 +104,5 @@ def normalize(race_info):
             except ValueError:
                 pass
             else:
-                break   
+                break
 

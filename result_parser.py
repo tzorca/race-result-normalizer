@@ -13,7 +13,7 @@ def get_header(raw_data):
         match = RESULTS_HEADER_SEPARATOR_PATTERN.match(line)
 
         if match:
-            header_lines = [lines[line_num-1], line]
+            header_lines = [lines[line_num - 1], line]
             break
 
         line_num += 1
@@ -23,14 +23,14 @@ def get_header(raw_data):
 def get_field_defs(header_lines):
     field_defs = []
     new_field = {'start':0}
-    
+
     # TODO: This currently relies on a space being at the end of the header
     for i, c in enumerate(header_lines[1]):
         if (c == " "):
             new_field['end'] = i
             field_defs.append(new_field)
 
-            new_field = {'start':i+1}
+            new_field = {'start':i + 1}
 
     for field in field_defs:
         start = field['start']
@@ -44,7 +44,7 @@ def get_field_defs(header_lines):
 def filter_to_result_lines(header_lines, raw_data, invert: bool):
     lines = raw_data.splitlines(True)
     good_lengths = list(map(len, header_lines))
-        
+
     result_lines = []
 
     for line in lines:
@@ -88,28 +88,28 @@ def normalize(mapped_results):
 
 def normalize_time(time_str):
     colon_count = time_str.count(":")
-    
+
     # Blank
     if (len(time_str.strip()) == 0):
         return None
-    
+
     if colon_count == 1:
         time_str = '0:' + time_str
     elif colon_count != 2:
         print("Invalid time %s" % time_str)
         return None
-    
+
     if not '.' in time_str:
         time_str += '.0'
-        
+
     try:
-        t = datetime.strptime(time_str,"%H:%M:%S.%f")
-        return datetime_to_timedelta(t).total_seconds()/60.0
+        t = datetime.strptime(time_str, "%H:%M:%S.%f")
+        return datetime_to_timedelta(t).total_seconds() / 60.0
     except Exception as e:
         print(e)
         return None
-        
+
 def datetime_to_timedelta(dt):
     return timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
-    
-    
+
+
