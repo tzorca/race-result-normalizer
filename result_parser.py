@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
-
 def get_header(raw_data):
     header_lines = None
 
@@ -111,5 +110,40 @@ def normalize_time(time_str):
 
 def datetime_to_timedelta(dt):
     return timedelta(hours=dt.hour, minutes=dt.minute, seconds=dt.second)
+
+
+def get_blank_ratio(dicts, key_name):
+    blank_count = 0
+    for dictionary in dicts:
+        if not key_name in dictionary:
+            continue
+        if dictionary[key_name] is None:
+            blank_count += 1
+        elif len(str(dictionary[key_name]).strip()) == 0:
+            blank_count += 1
+
+    return blank_count / float(len(dicts))
+
+
+BLANK_CUTOFF_RATIO = 0.05
+def filter_bad_resultset(filename, resultset):
+    if (len(resultset) == 0):
+        print("%s: No result entries found" % (filename))
+        return True
+
+    blank_name_ratio = get_blank_ratio(resultset, "Name")
+    if (blank_name_ratio > BLANK_CUTOFF_RATIO):
+        print("%s: %d%% names were parsed as blank" % (filename, blank_name_ratio * 100))
+        return True
+
+    blank_time_ratio = get_blank_ratio(resultset, "Guntime")
+    blank_time_ratio += get_blank_ratio(resultset, "Nettime")
+    blank_time_ratio += get_blank_ratio(resultset, "Time")
+    if (blank_time_ratio > BLANK_CUTOFF_RATIO):
+        print("%s: ~%d%% times were parsed as blank" % (filename, blank_time_ratio * 100))
+        return True
+
+    return False
+
 
 
