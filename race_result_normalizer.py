@@ -1,7 +1,6 @@
 import os
 import sys
-from parsers import result_parser
-from parsers import race_parser
+from processors import result_parser, race_parser, runner_matcher
 import pymysql
 import settings
 from helpers import mysql_helper, csv_helper
@@ -18,6 +17,7 @@ def main():
         parse_output = parse_files(filenames)
         results = parse_output["results"]
         race_info = parse_output["race_info"]
+        runners = runner_matcher.match_runners(results)
         
         save_to_tsv_file("all_results.tsv", results)
         save_to_db(results, settings.TABLE_DEFS["result"])
