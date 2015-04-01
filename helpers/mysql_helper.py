@@ -25,6 +25,7 @@ def drop_table(db_connection: pymysql.Connection, table_name):
 
             
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
+    
     column_renames = table_def["column_renames"]
     column_defs = table_def["columns"]
 

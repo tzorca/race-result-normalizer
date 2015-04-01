@@ -1,7 +1,7 @@
 import os
 import sys
-from processors import result_parser, race_parser, runner_matcher
 import pymysql
+from processors import result_parser, race_parser, runner_matcher
 from helpers import mysql_helper
 from settings import settings
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
@@ -14,13 +14,12 @@ def main():
         path = sys.argv[1]
         filenames = [os.path.join(path,fn) for fn in os.listdir(path)] 
          
-        parse_output = parse_files(filenames)
-        results = parse_output["results"]
-        race_info = parse_output["race_info"]
-        runners = runner_matcher.match_runners(results)
+        table_data = parse_files(filenames)
         
-        save_to_db(results, settings.TABLE_DEFS["result"])
-        save_to_db(race_info, settings.TABLE_DEFS["race"])
+        runners = runner_matcher.match_runners(table_data['result'])
+        
+        for table_name in table_data:
+            save_to_db(table_data[table_name], settings.TABLE_DEFS[table_name])
         print("Finished.")
 
 def save_to_db(dataset, table_def):
@@ -34,7 +33,7 @@ def save_to_db(dataset, table_def):
 
 def parse_files(filename_list):
     race_id = 1
-    multiple_file_parse = {"race_info": [], "results": []}
+    table_data = {"race": [], "result": []}
 
     for filename in filename_list:
         if not filename.endswith(".txt"):
@@ -42,11 +41,11 @@ def parse_files(filename_list):
 
         file_parse = parse_file(filename, race_id)
         if file_parse:
-            multiple_file_parse["race_info"].append(file_parse["race_info"])
-            multiple_file_parse["results"].extend(file_parse["results"])
+            table_data["race"].append(file_parse["race"])
+            table_data["result"].extend(file_parse["result"])
         race_id += 1
 
-    return multiple_file_parse
+    return table_data
 
 def parse_file(filename, race_id):
     with open(filename, "r") as input_file:
@@ -67,7 +66,7 @@ def parse_file(filename, race_id):
     race_parser.normalize(race_info)
     race_info['id'] = race_id
 
-    return {"race_info": race_info, "results": results}
+    return {"race": race_info, "result": results}
 
 
 def add_to_each_row(dictionary_list, extra):
