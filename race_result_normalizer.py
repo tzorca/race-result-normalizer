@@ -2,9 +2,10 @@ import os
 import sys
 from processors import result_parser, race_parser, runner_matcher
 import pymysql
-import settings
 from helpers import mysql_helper
-from secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
+from settings import settings
+from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
+
 def main():
     if (len(sys.argv) < 2):
         script_name = os.path.basename(__file__)
@@ -18,7 +19,6 @@ def main():
         race_info = parse_output["race_info"]
         runners = runner_matcher.match_runners(results)
         
-        save_to_tsv_file("all_results.tsv", results)
         save_to_db(results, settings.TABLE_DEFS["result"])
         save_to_db(race_info, settings.TABLE_DEFS["race"])
         print("Finished.")
