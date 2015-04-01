@@ -11,7 +11,8 @@ TABLE_DEFS = {
             "net_time": "decimal(7,4)",
             "runner_name": "text",
             "place": "text",
-            "race_id": "integer"
+            "race_id": "integer",
+            "result_id": "integer"
         },
         "column_renames": {
             "Ag": "age",
@@ -37,6 +38,18 @@ TABLE_DEFS = {
             "name": "text",
             "location": "text",
             "certification": "text"
+        },
+        "column_renames": {
+        }
+    },
+              
+    "runner": {
+        "name": "runner",
+        "columns": {
+            "id": "int not null primary key",
+            "name": "text",
+            "ages": "text",
+            "sexes": "text",
         },
         "column_renames": {
         }

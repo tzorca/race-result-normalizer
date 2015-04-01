@@ -23,12 +23,10 @@ def drop_table(db_connection: pymysql.Connection, table_name):
     cursor.close()
     db_connection.commit()
 
-            
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
-    
-    column_renames = table_def["column_renames"]
     column_defs = table_def["columns"]
 
+    cursor = db_connection.cursor()
     for row in rows:
         column_names = []
         parameters = []
@@ -36,9 +34,7 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
         
         for column_name in row:
             field_value = row[column_name]
-            if (column_name in column_renames):
-                column_name = column_renames[column_name]
-
+            
             if (column_name not in column_defs):
                 continue
                 
@@ -51,7 +47,6 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
         column_names_string = "(" + ",".join(column_names) + ")"
         placeholders_string = "(" + ",".join(placeholders)  + ")"
         
-        cursor = db_connection.cursor()
         
         insert_sql = "insert into " + table_def["name"] + " " + column_names_string + " values " + placeholders_string + ";"
         try:
@@ -60,6 +55,7 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
             print(e)
             print(insert_sql)
             print(parameters)
+        
     cursor.close()
     db_connection.commit()
 

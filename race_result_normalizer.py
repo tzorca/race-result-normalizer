@@ -15,8 +15,8 @@ def main():
         filenames = [os.path.join(path,fn) for fn in os.listdir(path)] 
          
         table_data = parse_files(filenames)
-        
-        runners = runner_matcher.match_runners(table_data['result'])
+        rename_columns(table_data, settings.TABLE_DEFS)
+        table_data['runner'] = runner_matcher.match_runners(table_data['result'])
         
         for table_name in table_data:
             save_to_db(table_data[table_name], settings.TABLE_DEFS[table_name])
@@ -69,10 +69,23 @@ def parse_file(filename, race_id):
     results = result_parser.get_results(filename, header_lines, data_from_file)
     if not results: 
         return
-
+    
     add_to_each_row(results, {"race_id":race_id})
     
     return {"race": race_info, "result": results}
+
+def rename_columns(all_table_data, table_defs):
+    
+    for table_name in all_table_data:
+        column_renames = table_defs[table_name]['column_renames']
+        table_data = all_table_data[table_name]
+        for row in table_data:
+            for column_name in row:
+                value = row[column_name]
+                if column_name in column_renames:
+                    new_name = column_renames[column_name]
+                    row[new_name] = value
+                    del row[column_name]
 
 
 def add_to_each_row(dictionary_list, extra):
