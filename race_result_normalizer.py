@@ -56,16 +56,22 @@ def parse_file(filename, race_id):
         print("%s: Could not read header" % filename)
         return
     
+    race_info = race_parser.get_race_info(result_parser.filter_to_result_lines(header_lines, data_from_file, True))
+    race_parser.normalize(race_info)
+    race_info['id'] = race_id
+    if not len(race_info['name'].strip()):
+        print("%s: No race name found." % filename)
+        return
+    if not 'date' in race_info:
+        print("%s: No date found." % filename)
+        return
+    
     results = result_parser.get_results(filename, header_lines, data_from_file)
     if not results: 
         return
 
     add_to_each_row(results, {"race_id":race_id})
-
-    race_info = race_parser.get_race_info(result_parser.filter_to_result_lines(header_lines, data_from_file, True))
-    race_parser.normalize(race_info)
-    race_info['id'] = race_id
-
+    
     return {"race": race_info, "result": results}
 
 
