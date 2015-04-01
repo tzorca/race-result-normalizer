@@ -3,9 +3,8 @@ import sys
 from processors import result_parser, race_parser, runner_matcher
 import pymysql
 import settings
-from helpers import mysql_helper, csv_helper
+from helpers import mysql_helper
 from secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
-
 def main():
     if (len(sys.argv) < 2):
         script_name = os.path.basename(__file__)
@@ -32,12 +31,6 @@ def save_to_db(dataset, table_def):
     mysql_helper.insert_rows(db_connection, table_def, dataset)
     
     db_connection.close()
-
-def save_to_tsv_file(filename, mapped_results):
-    output_data = csv_helper.rows_to_csv(mapped_results, "\t")
-    base_filename = os.path.splitext(filename)[0]
-    with open(base_filename + ".tsv", "w") as output_file:
-        output_file.write(output_data)
 
 def parse_files(filename_list):
     race_id = 1
