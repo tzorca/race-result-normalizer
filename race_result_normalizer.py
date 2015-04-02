@@ -15,7 +15,6 @@ def main():
         filenames = [os.path.join(path,fn) for fn in os.listdir(path)] 
          
         table_data = parse_files(filenames)
-        rename_columns(table_data, settings.TABLE_DEFS)
         table_data['runner'] = runner_matcher.match_runners(table_data['result'])
         
         for table_name in table_data:
@@ -41,8 +40,8 @@ def parse_files(filename_list):
 
         file_parse = parse_file(filename, race_id)
         if file_parse:
-            table_data["race"].append(file_parse["race"])
-            table_data["result"].extend(file_parse["result"])
+            for table_name in file_parse:
+                table_data[table_name].extend(file_parse[table_name])
         race_id += 1
 
     return table_data
@@ -72,7 +71,9 @@ def parse_file(filename, race_id):
     
     add_to_each_row(results, {"race_id":race_id})
     
-    return {"race": race_info, "result": results}
+    table_data = {"race": [race_info], "result": results}
+    rename_columns(table_data, settings.TABLE_DEFS)
+    return table_data
 
 def rename_columns(all_table_data, table_defs):
     
