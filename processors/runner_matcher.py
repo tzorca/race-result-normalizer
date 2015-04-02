@@ -1,36 +1,32 @@
+from collections import defaultdict
+
 def match_runners(results):
-    names = {}
     runners = []
     
+    results_by_name_and_sex = defaultdict( list )
     for result in results:
-        if not 'runner_name' in result:
-            continue
-        
-        name = result['runner_name']
-        if name in names:
-            names[name].append(result)
-        else:
-            names[name] = [result]
-            
+        name = result.get('runner_name')
+        sex = result.get('sex')
+        results_by_name_and_sex[(name, sex)].append(result)
+    
     runner_id = 0
-    for name in names:
-        runners.append(make_runner_from_results(name, runner_id, names[name]))
+    for key in results_by_name_and_sex:
+        name = key[0]
+        sex = key[1]
+        runners.append(make_runner_from_results(name, sex, runner_id, results_by_name_and_sex[key]))
         result['runner_id'] = runner_id
         runner_id += 1
     
     return runners
     
-def make_runner_from_results(name, runner_id, results):
-    runner = {'name': name, 'id': runner_id}
+def make_runner_from_results(name, sex, runner_id, results):
+    runner = {'name': name, 'sex': sex, 'id': runner_id}
 
     ages = []
-    sexes = []
     for result in results:
         ages.append(result.get('age'))
-        sexes.append(result.get('sex'))
         
     runner['ages'] = str(ages)
-    runner['sexes'] = str(sexes)    
     
     return runner
         

@@ -48,8 +48,8 @@ TABLE_DEFS = {
         "columns": {
             "id": "int not null primary key",
             "name": "text",
-            "ages": "text",
-            "sexes": "text",
+            "sex": "text",
+            "ages": "text"
         },
         "column_renames": {
         }
