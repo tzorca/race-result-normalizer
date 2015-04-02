@@ -50,7 +50,7 @@ TABLE_DEFS = {
             "id": "int not null primary key",
             "name": "text",
             "sex": "text",
-            "ages": "text"
+            "birthdate_lte_list": "text"
         },
         "column_renames": {
         }

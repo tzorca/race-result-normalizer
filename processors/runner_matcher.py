@@ -22,11 +22,14 @@ def match_runners(results):
 def make_runner_from_results(name, sex, runner_id, results):
     runner = {'name': name, 'sex': sex, 'id': runner_id}
 
-    ages = []
+    birthdate_lte_list = []
     for result in results:
-        ages.append(result.get('age'))
+        birthdate_lte = result.get('birthdate_lte')
+        if birthdate_lte:
+            birthdate_lte = birthdate_lte.strftime("%Y-%m-%d")
+        birthdate_lte_list.append(birthdate_lte)
         
-    runner['ages'] = str(ages)
+    runner['birthdate_lte_list'] = str(birthdate_lte_list)
     
     return runner
         
