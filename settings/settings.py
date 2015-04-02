@@ -12,7 +12,8 @@ TABLE_DEFS = {
             "runner_name": "text",
             "place": "text",
             "race_id": "integer",
-            "result_id": "integer"
+            "result_id": "integer",
+            "birthdate_lte": "date"
         },
         "column_renames": {
             "Ag": "age",

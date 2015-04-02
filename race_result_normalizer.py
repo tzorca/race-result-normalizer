@@ -5,6 +5,7 @@ from processors import result_parser, race_parser, runner_matcher
 from helpers import mysql_helper
 from settings import settings
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
+from dateutil.relativedelta import relativedelta
 
 def main():
     if (len(sys.argv) < 2):
@@ -68,15 +69,22 @@ def parse_file(filename, race_id):
     results = result_parser.get_results(filename, header_lines, data_from_file)
     if not results: 
         return
-    
+
     add_to_each_row(results, {"race_id":race_id})
-    
     table_data = {"race": [race_info], "result": results}
     rename_columns(table_data, settings.TABLE_DEFS)
+    
+    # Add "birthdate less than or equal to" field
+    for result in results:
+        if 'age' in result:
+            age = result['age']
+            if not age.isdigit():
+                continue
+            result['birthdate_lte'] = race_info['date'] - relativedelta(years=int(age))
+
     return table_data
 
 def rename_columns(all_table_data, table_defs):
-    
     for table_name in all_table_data:
         column_renames = table_defs[table_name]['column_renames']
         table_data = all_table_data[table_name]

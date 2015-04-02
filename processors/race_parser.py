@@ -1,5 +1,6 @@
 import re
 import time
+from datetime import datetime
 
 STATE = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
 MONTH = "(January|February|March|April|May|June|July|August|September|October|November|December)"
@@ -88,7 +89,7 @@ def normalize(race_info):
         race_info['date'] = None
         for date_format in DATE_FORMATS:
             try:
-                race_info['date'] = time.strptime(date_str, date_format)
+                race_info['date'] = datetime.strptime(date_str, date_format)
             except ValueError:
                 pass
             else:
