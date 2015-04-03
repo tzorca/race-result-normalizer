@@ -1,5 +1,5 @@
 import re
-from helpers import field_normalizers, dict_helper
+from helpers import field_normalizers, data_helper
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
@@ -105,14 +105,14 @@ def filter_bad_resultset(filename, resultset):
         print("%s: No result entries found" % (filename))
         return True
 
-    blank_name_ratio = dict_helper.get_blank_ratio(resultset, "Name")
+    blank_name_ratio = data_helper.get_blank_ratio(resultset, "Name")
     if (blank_name_ratio > BLANK_CUTOFF_RATIO):
         print("%s: %d%% names were parsed as blank" % (filename, blank_name_ratio * 100))
         return True
 
-    blank_time_ratio = dict_helper.get_blank_ratio(resultset, "Guntime")
-    blank_time_ratio += dict_helper.get_blank_ratio(resultset, "Nettime")
-    blank_time_ratio += dict_helper.get_blank_ratio(resultset, "Time")
+    blank_time_ratio = data_helper.get_blank_ratio(resultset, "Guntime")
+    blank_time_ratio += data_helper.get_blank_ratio(resultset, "Nettime")
+    blank_time_ratio += data_helper.get_blank_ratio(resultset, "Time")
     if (blank_time_ratio > BLANK_CUTOFF_RATIO):
         print("%s: ~%d%% times were parsed as blank" % (filename, blank_time_ratio * 100))
         return True
