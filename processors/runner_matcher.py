@@ -1,6 +1,7 @@
 from collections import defaultdict
 from helpers import data_helper
 import datetime
+import math
 
 YEARS_BEFORE_SPLIT = 3
 
@@ -37,7 +38,7 @@ def match_runners(all_results):
             birthdate_year_range = (max(birthdate_lte_list) - min(birthdate_lte_list)).days / (365.25)
         
             # Cluster into multiple runners based on YEARS_BEFORE_SPLIT
-            max_clusters = round(birthdate_year_range / YEARS_BEFORE_SPLIT)
+            max_clusters = math.ceil(birthdate_year_range / float(YEARS_BEFORE_SPLIT))
             if max_clusters > 1:
                 min_difference = datetime.timedelta(days=365.25*YEARS_BEFORE_SPLIT)
                 result_clusters = data_helper.cluster_list_of_dicts(current_results, 'birthdate_lte', max_clusters, min_difference)

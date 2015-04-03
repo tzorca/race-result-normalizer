@@ -36,16 +36,10 @@ def cluster_list_of_dicts(list_dicts, key, max_cluster_count, min_difference):
     remaining_dicts = list_dicts[:]
     for split_after_index in split_after_indexes:
         clusters.append(remaining_dicts[split_after_index:])
-        remaining_dicts = remaining_dicts[:split_after_index-1]
+        remaining_dicts = remaining_dicts[:split_after_index]
     if len(remaining_dicts):
         clusters.append(remaining_dicts)
 
-    # Debug
-    # clustered_values = []
-    # for cluster in clusters:
-    #   clustered_values.append([c.get(key) for c in cluster])  
-    # print(str(clustered_values))
-    
     return clusters
 
 def get_list_of_dicts_differences(list_dicts, key):
