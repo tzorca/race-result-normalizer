@@ -1,3 +1,5 @@
+import datetime
+import statistics
 
 def get_blank_ratio(dicts, key_name):
     blank_count = 0
@@ -42,6 +44,7 @@ def cluster_list_of_dicts(list_dicts, key, max_cluster_count, min_difference):
 
     return clusters
 
+
 def get_list_of_dicts_differences(list_dicts, key):
     differences = []
     for i, (dict_l, dict_r) in enumerate(zip(list_dicts, list_dicts[1:])):
@@ -49,3 +52,25 @@ def get_list_of_dicts_differences(list_dicts, key):
         differences.append((i, difference))
         
     return differences
+
+
+EPOCH = datetime.datetime(1970,1,1)
+def get_timestamp(datetime_obj):
+    return (datetime_obj - EPOCH).total_seconds()
+
+
+def remove_datetime_outliers(datetime_population, sigmas):
+    if len(datetime_population) < 3:
+        return datetime_population
+    
+    timestamp_population = [get_timestamp(dt) for dt in datetime_population]
+    
+    mean_val = statistics.mean(timestamp_population)
+    std_devs = statistics.pstdev(timestamp_population) * sigmas
+             
+    def not_outlier(x):
+        if abs(x - mean_val) <= std_devs:
+            return x
+ 
+    return [dt for dt, ts in zip(datetime_population, timestamp_population) if not_outlier(ts)]
+

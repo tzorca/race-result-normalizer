@@ -46,16 +46,22 @@ def match_runners(all_results):
         # Create runners
         for result_cluster in result_clusters:
             birthdate_lte_list = []
+            approximate_birthdate = None
+            
             for result in result_cluster:
                 if result.get('birthdate_lte'):
-                    birthdate_lte_list.append(result['birthdate_lte'].strftime("%Y-%m-%d"))
+                    birthdate_lte_list.append(result['birthdate_lte'])
                 result['runner_id'] = runner_id
                 
+            if (len(birthdate_lte_list)):
+                birthdate_lte_list = data_helper.remove_datetime_outliers(birthdate_lte_list, 2)
+                approximate_birthdate = min(birthdate_lte_list)
+                    
             runners.append({
                 'id': runner_id, 
                 'name': name, 
                 'sex': sex,
-                'birthdate_lte_list': str(birthdate_lte_list)
+                'approximate_birthdate': approximate_birthdate
             })
             runner_id += 1
     
