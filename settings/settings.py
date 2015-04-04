@@ -3,17 +3,14 @@ TABLE_DEFS = {
         "name": "result",
         "columns": {
             "id": "int not null primary key auto_increment",
-            "age": "text",
             "bib_num": "text",
             "division": "text",
             "division_total": "text",
             "gun_time": "decimal(7,4)",
             "net_time": "decimal(7,4)",
-            "runner_name": "text",
             "place": "text",
             "race_id": "integer",
-            "result_id": "integer",
-            "birthdate_lte": "date"
+            "runner_id": "integer"
         },
         "column_renames": {
             "Ag": "age",
