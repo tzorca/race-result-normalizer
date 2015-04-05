@@ -4,6 +4,7 @@ TABLE_DEFS = {
         "columns": {
             "id": "int not null primary key auto_increment",
             "bib_num": "text",
+            "age": "text",
             "division": "text",
             "division_total": "text",
             "gun_time": "decimal(7,4)",
