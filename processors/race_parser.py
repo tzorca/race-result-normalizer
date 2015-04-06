@@ -17,7 +17,10 @@ PAREN_BLOCK_PATTERN = re.compile(r'\(.*?\)')
 
 EXCLUDED_PATTERNS = [
     # Page Number
-    re.compile(r'^\s*page \d+$', re.IGNORECASE)
+    re.compile(r'^\s*page \d+$', re.IGNORECASE),
+    
+    # Blank line
+    re.compile(r'^\s+$')
 ]
 
 # Outer array has patterns for line matching
@@ -52,6 +55,7 @@ def get_race_info(non_result_lines):
 
     for line in race_info_lines:
         line_matched = False
+        
         for line_breakdown in RACE_INFO_PATTERNS:
             line_name = line_breakdown['name']
             if line_breakdown['pattern'].search(line):
@@ -69,8 +73,7 @@ def get_race_info(non_result_lines):
         if not line_matched and "name" not in race_info:
             # The race name line should be the first line after filtering out the above
             race_info["name"] = line.strip()
-
-
+        
     # Remove unimportant parenthetical information
     # (Important information will have already been captured)
     for info_name in race_info:
