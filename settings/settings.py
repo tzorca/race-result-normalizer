@@ -13,6 +13,11 @@ TABLE_DEFS = {
             "race_id": "integer",
             "runner_id": "integer"
         },
+        "ext_table_def": """
+            CONSTRAINT `UQ_result` UNIQUE NONCLUSTERED (
+                `race_id`, `runner_id`, `gun_time`, `net_time`
+            )
+        """,
         "column_renames": {
             "Ag": "age",
             "Age": "age",
