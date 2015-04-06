@@ -1,4 +1,5 @@
 import re
+import metrics
 from helpers import field_normalizers, data_helper
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
@@ -102,19 +103,19 @@ def normalize(mapped_results):
 BLANK_CUTOFF_RATIO = 0.05
 def filter_bad_resultset(filename, resultset):
     if (not resultset or len(resultset) == 0):
-        print("%s: No result entries found" % (filename))
+        metrics.add_error_file(filename, "No result entries found")
         return True
 
     blank_name_ratio = data_helper.get_blank_ratio(resultset, "Name")
-    if (blank_name_ratio > BLANK_CUTOFF_RATIO):
-        print("%s: %d%% names were parsed as blank" % (filename, blank_name_ratio * 100))
+    if (blank_name_ratio > BLANK_CUTOFF_RATIO):        
+        metrics.add_error_file(filename, "blank_name_ratio > BLANK_CUTOFF_RATIO")
         return True
 
     blank_time_ratio = data_helper.get_blank_ratio(resultset, "Guntime")
     blank_time_ratio += data_helper.get_blank_ratio(resultset, "Nettime")
     blank_time_ratio += data_helper.get_blank_ratio(resultset, "Time")
     if (blank_time_ratio > BLANK_CUTOFF_RATIO):
-        print("%s: ~%d%% times were parsed as blank" % (filename, blank_time_ratio * 100))
+        metrics.add_error_file(filename, "blank_time_ratio > BLANK_CUTOFF_RATIO")
         return True
 
     return False

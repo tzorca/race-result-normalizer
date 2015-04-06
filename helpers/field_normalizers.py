@@ -10,7 +10,7 @@ def time_string_to_minutes_decimal(time_str):
     if colon_count == 1:
         time_str = '0:' + time_str
     elif colon_count != 2:
-        print("Invalid time %s" % time_str)
+#         print("Invalid time %s" % time_str)
         return None
 
     if not '.' in time_str:

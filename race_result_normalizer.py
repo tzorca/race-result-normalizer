@@ -2,6 +2,7 @@ import os
 import sys
 import pymysql
 from processors import result_parser, race_parser, runner_matcher
+import metrics
 from helpers import mysql_helper
 from settings import settings
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
@@ -15,11 +16,14 @@ def main():
         path = sys.argv[1]
         filenames = [os.path.join(path,fn) for fn in os.listdir(path)] 
          
+        print("Started parsing.")
         table_data = parse_files(filenames)
         table_data['runner'] = runner_matcher.match_runners(table_data['result'])
         
         for table_name in table_data:
             save_to_db(table_data[table_name], settings.TABLE_DEFS[table_name])
+            
+        metrics.print_error_files()
         print("Finished.")
 
 def save_to_db(dataset, table_def):
@@ -53,17 +57,17 @@ def parse_file(filename, race_id):
 
     header_lines = result_parser.get_header(data_from_file)
     if not header_lines:
-        print("%s: Could not read header" % filename)
+        metrics.add_error_file(filename, "Could not read header")
         return
     
     race_info = race_parser.get_race_info(result_parser.filter_to_result_lines(header_lines, data_from_file, True))
     race_parser.normalize(race_info)
     race_info['id'] = race_id
     if not len(race_info['name'].strip()):
-        print("%s: No race name found." % filename)
+        metrics.add_error_file(filename, "No race name found")
         return
     if not 'date' in race_info:
-        print("%s: No date found." % filename)
+        metrics.add_error_file(filename, "No race date found")
         return
     
     results = result_parser.get_results(filename, header_lines, data_from_file)
