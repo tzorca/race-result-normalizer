@@ -28,24 +28,30 @@ def drop_table(db_connection: pymysql.Connection, table_name):
     cursor.close()
     db_connection.commit()
 
+
+BATCH_INSERT_LIMIT = 100
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
     column_defs = table_def["columns"]
 
     # Build column names string from column definitions
     column_names_string = "(" + ",".join([c for c in column_defs if validate_identifier(c)]) + ")"
+    
+    # Build first part of SQL string
+    insert_sql_start = "insert into " + table_def["name"] + " " + column_names_string + " values "
 
     cursor = db_connection.cursor()
     for row in rows:
+
         parameters = []
         placeholders = []
-        
+            
         for column_name in column_defs:
             parameters.append(row.get(column_name))
             placeholders.append("%s")
-        
+
         placeholders_string = "(" + ",".join(placeholders)  + ")"
                 
-        insert_sql = "insert into " + table_def["name"] + " " + column_names_string + " values " + placeholders_string + ";"
+        insert_sql = insert_sql_start + placeholders_string + ";"
         try:
             cursor.execute(insert_sql, parameters)
         except Exception as e:
