@@ -31,28 +31,20 @@ def drop_table(db_connection: pymysql.Connection, table_name):
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
     column_defs = table_def["columns"]
 
+    # Build column names string from column definitions
+    column_names_string = "(" + ",".join([c for c in column_defs if validate_identifier(c)]) + ")"
+
     cursor = db_connection.cursor()
     for row in rows:
-        column_names = []
         parameters = []
         placeholders = []
         
-        for column_name in row:
-            field_value = row[column_name]
-            
-            if (column_name not in column_defs):
-                continue
-                
-            validate_identifier(column_name)
-            
-            column_names.append(column_name)
-            parameters.append(field_value)
+        for column_name in column_defs:
+            parameters.append(row.get(column_name))
             placeholders.append("%s")
         
-        column_names_string = "(" + ",".join(column_names) + ")"
         placeholders_string = "(" + ",".join(placeholders)  + ")"
-        
-        
+                
         insert_sql = "insert into " + table_def["name"] + " " + column_names_string + " values " + placeholders_string + ";"
         try:
             cursor.execute(insert_sql, parameters)
