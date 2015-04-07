@@ -1,6 +1,7 @@
 import os
 import sys
 import pymysql
+import cProfile
 from processors import result_parser, race_parser, runner_matcher
 import metrics
 from helpers import mysql_helper
@@ -16,24 +17,24 @@ def main():
         path = sys.argv[1]
         filenames = [os.path.join(path,fn) for fn in os.listdir(path)] 
          
-        print("Started parsing.")
+        print("Beginning parse...")
         table_data = parse_files(filenames)
         table_data['runner'] = runner_matcher.match_runners(table_data['result'])
         
+        print("Beginning database export...")
+        db_connection = pymysql.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD, database=DB_DATABASE)
         for table_name in table_data:
-            save_to_db(table_data[table_name], settings.TABLE_DEFS[table_name])
-            
+            save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
+        db_connection.close()
+  
         metrics.print_error_files()
         print("Finished.")
 
-def save_to_db(dataset, table_def):
-    db_connection = pymysql.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD, database=DB_DATABASE)
-    
+def save_to_db(db_connection, dataset, table_def):
+
     mysql_helper.drop_table(db_connection, table_def["name"])
     mysql_helper.create_table(db_connection, table_def)
     mysql_helper.insert_rows(db_connection, table_def, dataset)
-    
-    db_connection.close()
 
 def parse_files(filename_list):
     race_id = 1
@@ -68,6 +69,7 @@ def parse_file(filename, race_id):
     if not len(race_info['name'].strip()):
         metrics.add_error_file(filename, "No race name found")
         return
+    
     if not 'date' in race_info:
         metrics.add_error_file(filename, "No race date found")
         return
