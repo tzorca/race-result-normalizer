@@ -1,5 +1,6 @@
 import pymysql
 import re
+from helpers import data_helper
 
 def create_table(db_connection: pymysql.Connection, table_def):
     column_defs = table_def["columns"]
@@ -28,8 +29,7 @@ def drop_table(db_connection: pymysql.Connection, table_name):
     cursor.close()
     db_connection.commit()
 
-
-BATCH_INSERT_LIMIT = 100
+BATCH_INSERT_LIMIT = 500
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
     column_defs = table_def["columns"]
 
@@ -39,19 +39,19 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
     # Build first part of SQL string
     insert_sql_start = "insert into " + table_def["name"] + " " + column_names_string + " values "
 
+    placeholders_string = ["(" + ",".join(["%s"]*len(column_defs))  + ") "]
+
     cursor = db_connection.cursor()
-    for row in rows:
-
+    batches = data_helper.split_into_sublists(rows, BATCH_INSERT_LIMIT)
+    for batch in batches:
+        
+        # Get all parameters in batch
         parameters = []
-        placeholders = []
-            
-        for column_name in column_defs:
-            parameters.append(row.get(column_name))
-            placeholders.append("%s")
-
-        placeholders_string = "(" + ",".join(placeholders)  + ")"
-                
-        insert_sql = insert_sql_start + placeholders_string + ";"
+        for row in batch:
+            for column_name in column_defs:
+                parameters.append(row.get(column_name))
+        
+        insert_sql = insert_sql_start + ",".join(placeholders_string * len(batch)) + ";"
         try:
             cursor.execute(insert_sql, parameters)
         except Exception as e:
@@ -67,3 +67,5 @@ IDENTIFIER_VALIDATOR = re.compile(r'^[0-9a-zA-Z_\$]+$');
 def validate_identifier(name):
     if not IDENTIFIER_VALIDATOR.match(name):
         raise ValueError("%s is not a valid identifier." % name)
+        return False
+    return True

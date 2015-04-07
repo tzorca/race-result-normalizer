@@ -74,3 +74,6 @@ def remove_datetime_outliers(datetime_population, sigmas):
  
     return [dt for dt, ts in zip(datetime_population, timestamp_population) if not_outlier(ts)]
 
+
+def split_into_sublists(the_list, sublist_size):
+    return [the_list[x:x+sublist_size] for x in range(0, len(the_list), sublist_size)]
