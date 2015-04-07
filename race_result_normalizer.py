@@ -22,7 +22,9 @@ def main():
         table_data['runner'] = runner_matcher.match_runners(table_data['result'])
         
         print("Beginning database export...")
-        db_connection = pymysql.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASSWORD, database=DB_DATABASE)
+        db_connection = pymysql.connect(host=DB_HOST, user=DB_USER, 
+                                        passwd=DB_PASSWORD, database=DB_DATABASE, 
+                                        charset="utf8")
         for table_name in table_data:
             save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
         db_connection.close()
