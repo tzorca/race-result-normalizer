@@ -41,7 +41,8 @@ TABLE_DEFS = {
             "time": "time",
             "name": "text",
             "location": "text",
-            "certification": "text"
+            "certification": "text",
+            "filename": "text"
         },
         "column_renames": {
         }

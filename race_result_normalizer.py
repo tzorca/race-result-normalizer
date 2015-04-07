@@ -63,6 +63,8 @@ def parse_file(filename, race_id):
     race_info = race_parser.get_race_info(result_parser.filter_to_result_lines(header_lines, data_from_file, True))
     race_parser.normalize(race_info)
     race_info['id'] = race_id
+    race_info['filename'] = filename
+    
     if not len(race_info['name'].strip()):
         metrics.add_error_file(filename, "No race name found")
         return

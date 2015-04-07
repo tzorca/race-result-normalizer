@@ -10,7 +10,7 @@ DIST_UNIT = "(kilometer|k|miler|miles|mile|mi)"
 ALL_PATTERN = re.compile('.*')
 TIME_PATTERN = re.compile(r'\d{1,2}:\d{2} ?(A|P)M')
 DATE_PATTERN = re.compile(MONTH + r' ?\d+, ?' + YEAR)
-LOCATION_PATTERN = re.compile(r'^\s*[A-Za-z ]{3,}, ' + STATE)
+LOCATION_PATTERN = re.compile(r'^\s*([A-Za-z ]{3,}, ){1,3}' + STATE)
 CERTIFICATION_PATTERN = re.compile(r'(?<=\().*(?=\))')
 
 PAREN_BLOCK_PATTERN = re.compile(r'\(.*?\)')

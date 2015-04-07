@@ -60,9 +60,16 @@ def filter_to_result_lines(header_lines, raw_data, invert: bool):
 
     result_lines = []
 
+    past_header = False
+    
     for line in lines:
         # Skip header lines (Even when inverting)
         if (any(line == header for header in header_lines)):
+            past_header = True
+            continue
+        
+        # Don't claim lines as results until after the header 
+        if not invert and not past_header:
             continue
 
         # Skip lines whose length doesn't equal the header line's length
