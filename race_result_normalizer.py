@@ -2,6 +2,7 @@ import os
 import sys
 import pymysql
 import cProfile
+import re
 from processors import result_parser, race_parser, runner_matcher
 import metrics
 from helpers import mysql_helper
@@ -54,9 +55,21 @@ def parse_files(filename_list):
 
     return table_data
 
+
+
+EXCLUDED_FILE_DATA_PATTERNS = [
+    # Duplicate files
+    re.compile(r'^[*]{4} OVERALL .*? [*]{4}$', re.MULTILINE)
+]
+
 def parse_file(filename, race_id):
     with open(filename, "r") as input_file:
         data_from_file = input_file.read()
+
+    for pattern in EXCLUDED_FILE_DATA_PATTERNS:
+        if pattern.search(data_from_file):
+            metrics.add_error_file(filename, "Excluded file data pattern: " + str(pattern))
+            return
 
     header_lines = result_parser.get_header(data_from_file)
     if not header_lines:
