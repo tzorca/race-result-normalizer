@@ -97,7 +97,7 @@ def map_results(field_defs, result_lines):
 
     return mapped_results
 
-TIME_FIELDS = ["Time", "Guntime", "Nettime"]
+TIME_FIELDS = ["Time", "Guntime", "Nettime", "Pace"]
 
 def normalize(mapped_results):
     for row in mapped_results:
