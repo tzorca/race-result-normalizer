@@ -1,7 +1,6 @@
 import os
 import sys
 import pymysql
-import cProfile
 import re
 from processors import result_parser, race_parser, runner_matcher
 import metrics
@@ -97,13 +96,18 @@ def parse_file(filename, race_id):
     table_data = {"race": [race_info], "result": results}
     rename_columns(table_data, settings.TABLE_DEFS)
     
-    # Add "birthdate less than or equal to" field
+    # Add calculated result fields
     for result in results:
         if 'age' in result:
             age = result['age']
             if not age.isdigit():
                 continue
             result['birthdate_lte'] = race_info['date'] - relativedelta(years=int(age))
+        if result.get('pace'):
+            if result.get('gun_time'):
+                result['dist']  = result['gun_time'] / result['pace']
+            if result.get('net_time'): 
+                result['dist']  = result['net_time'] / result['pace']
 
     return table_data
 
