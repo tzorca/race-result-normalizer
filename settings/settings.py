@@ -13,7 +13,7 @@ TABLE_DEFS = {
             "place": "text",
             "race_id": "integer",
             "runner_id": "integer",
-            "dist": "decimal(3,2)"
+            "dist": "decimal(5,2)"
         },
         "ext_table_def": """
             CONSTRAINT `UQ_result` UNIQUE NONCLUSTERED (
