@@ -134,11 +134,6 @@ def group_distances_and_assign_race_ids(table_data):
     
     # Add calculated result fields
     for result in results:
-        if 'age' in result:
-            age = result['age']
-            if not age.isdigit():
-                continue
-            result['birthdate_lte'] = race_info['date'] - relativedelta(years=int(age))
             
         if result.get('pace'):
             time = result.get('gun_time') or result.get('net_time')
@@ -153,8 +148,9 @@ def group_distances_and_assign_race_ids(table_data):
                 dist_groups.append(this_dist)
 
             # Save this distance if it is different from the closest existing saved distance
-            # Get lowest ratio between saved distance groups and this group
             if this_dist and len(dist_groups):
+                
+                # Get lowest ratio between saved distance groups and this group
                 lowest_diff_ratio = 1
                 closest_dist = 0
                 for dist in dist_groups:
