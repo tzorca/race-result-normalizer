@@ -15,20 +15,20 @@ def main():
         print ("Usage: " + script_name + " <directory>")
     else:
         path = sys.argv[1]
-        filenames = [os.path.join(path,fn) for fn in os.listdir(path)] 
-         
+        filenames = [os.path.join(path, fn) for fn in os.listdir(path)]
+
         print("Beginning parse...")
         table_data = parse_files(filenames)
         table_data['runner'] = runner_matcher.match_runners(table_data['result'])
-        
+
         print("Beginning database export...")
-        db_connection = pymysql.connect(host=DB_HOST, user=DB_USER, 
-                                        passwd=DB_PASSWORD, database=DB_DATABASE, 
+        db_connection = pymysql.connect(host=DB_HOST, user=DB_USER,
+                                        passwd=DB_PASSWORD, database=DB_DATABASE,
                                         charset="utf8")
         for table_name in table_data:
             save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
         db_connection.close()
-  
+
         metrics.print_error_files()
         print("Finished.")
 
@@ -77,30 +77,30 @@ def parse_file(filename):
     if not header_lines:
         metrics.add_error_file(filename, "Could not read header")
         return
-    
+
     race_info = race_parser.get_race_info(result_parser.filter_to_result_lines(header_lines, data_from_file, True))
     race_parser.normalize(race_info)
-    
+
     race_info['filename'] = filename
-    
+
     if not len(race_info['name'].strip()):
         metrics.add_error_file(filename, "No race name found")
         return
-    
+
     if not 'date' in race_info:
         metrics.add_error_file(filename, "No race date found")
         return
-    
+
     results = result_parser.get_results(filename, header_lines, data_from_file)
-    if not results: 
+    if not results:
         return
 
     table_data = {"race": [race_info], "result": results}
     rename_columns(table_data, settings.TABLE_DEFS)
-    
+
     add_birthdate_lte(table_data)
-    group_distances_and_assign_race_ids(table_data)            
-    
+    group_distances_and_assign_race_ids(table_data)
+
     return table_data
 
 def rename_columns(all_table_data, table_defs):
@@ -129,53 +129,52 @@ def group_distances_and_assign_race_ids(table_data):
     global current_race_id
     results = table_data['result']
     race_info = table_data['race'][0]
-    
     dist_groups = []
-    
-    # Add calculated result fields
     for result in results:
-            
-        if result.get('pace'):
-            time = result.get('gun_time') or result.get('net_time')
 
-            if time: 
-                this_dist = round(time / result['pace'], 2)
-            else: 
-                this_dist = None
-            
-            # Save this distance if no distances have been saved yet
-            if len(dist_groups) == 0:
+        if not result.get('pace'):
+            continue
+
+        time = result.get('gun_time') or result.get('net_time')
+
+        if time:
+            this_dist = round(time / result['pace'], 2)
+        else:
+            this_dist = None
+
+        # Save this distance if no distances have been saved yet
+        if len(dist_groups) == 0:
+            dist_groups.append(this_dist)
+
+        # Save this distance if it is different from the closest existing saved distance
+        elif this_dist and len(dist_groups):
+
+            # Get lowest ratio between saved distance groups and this group
+            lowest_diff_ratio = 1
+            closest_dist = 0
+            for dist in dist_groups:
+                if not dist:
+                    continue
+
+                diff_ratio = abs(this_dist - dist) / dist
+                if not lowest_diff_ratio or diff_ratio < lowest_diff_ratio:
+                    lowest_diff_ratio = diff_ratio
+                    closest_dist = dist
+
+            if lowest_diff_ratio > DIFF_DIST_RATIO:
                 dist_groups.append(this_dist)
+            else:
+                this_dist = closest_dist
 
-            # Save this distance if it is different from the closest existing saved distance
-            if this_dist and len(dist_groups):
-                
-                # Get lowest ratio between saved distance groups and this group
-                lowest_diff_ratio = 1
-                closest_dist = 0
-                for dist in dist_groups:
-                    if not dist:
-                        continue
-                    
-                    diff_ratio = abs(this_dist - dist)/dist
-                    if not lowest_diff_ratio or diff_ratio < lowest_diff_ratio:
-                        lowest_diff_ratio = diff_ratio
-                        closest_dist = dist
-                
-                if lowest_diff_ratio > DIFF_DIST_RATIO:
-                    dist_groups.append(this_dist)
-                else:
-                    this_dist = closest_dist
-                
-                    
-            # Split out and copy race with new id somewhere around here
-            
-            result['dist'] = this_dist
-    
+
+        # Split out and copy race with new id somewhere around here
+
+        result['dist'] = this_dist
+
     race_info['id'] = current_race_id
     add_to_each_row(results, {"race_id":current_race_id})
 
-    
+
 
 
 def add_to_each_row(dictionary_list, extra):
