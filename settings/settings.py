@@ -12,8 +12,7 @@ TABLE_DEFS = {
             "pace": "decimal(7,4)",
             "place": "text",
             "race_id": "integer",
-            "runner_id": "integer",
-            "dist": "decimal(5,2)"
+            "runner_id": "integer"
         },
         "ext_table_def": """
             CONSTRAINT `UQ_result` UNIQUE NONCLUSTERED (
@@ -45,7 +44,8 @@ TABLE_DEFS = {
             "name": "text",
             "location": "text",
             "certification": "text",
-            "filename": "text"
+            "filename": "text",
+            "dist": "decimal(5,2)"
         },
         "column_renames": {
         }

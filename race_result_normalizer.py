@@ -99,7 +99,7 @@ def parse_file(filename):
     rename_columns(table_data, settings.TABLE_DEFS)
 
     add_birthdate_lte(table_data)
-    group_distances_and_assign_race_ids(table_data)
+    assign_distances_and_race_ids(table_data)
 
     return table_data
 
@@ -125,14 +125,18 @@ def add_birthdate_lte(table_data):
                 continue
             result['birthdate_lte'] = race_info['date'] - relativedelta(years=int(age))
 
-def group_distances_and_assign_race_ids(table_data):
+def assign_distances_and_race_ids(table_data):
     global current_race_id
+    initial_current_race_id = current_race_id
     results = table_data['result']
-    race_info = table_data['race'][0]
-    dist_groups = []
+    common_race_info = table_data['race'][0]
+    
+    # Assign distances and get race ID for each distance
+    distances_to_race_ids = {}
     for result in results:
 
         if not result.get('pace'):
+            result['race_id'] = initial_current_race_id
             continue
 
         time = result.get('gun_time') or result.get('net_time')
@@ -143,16 +147,16 @@ def group_distances_and_assign_race_ids(table_data):
             this_dist = None
 
         # Save this distance if no distances have been saved yet
-        if len(dist_groups) == 0:
-            dist_groups.append(this_dist)
+        if len(distances_to_race_ids) == 0:
+            distances_to_race_ids[this_dist] = current_race_id
 
         # Save this distance if it is different from the closest existing saved distance
-        elif this_dist and len(dist_groups):
+        elif this_dist:
 
             # Get lowest ratio between saved distance groups and this group
             lowest_diff_ratio = 1
             closest_dist = 0
-            for dist in dist_groups:
+            for dist in distances_to_race_ids:
                 if not dist:
                     continue
 
@@ -162,20 +166,27 @@ def group_distances_and_assign_race_ids(table_data):
                     closest_dist = dist
 
             if lowest_diff_ratio > DIFF_DIST_RATIO:
-                dist_groups.append(this_dist)
+                current_race_id += 1
+                distances_to_race_ids[this_dist] = current_race_id
             else:
                 this_dist = closest_dist
+        
+        result['race_id'] = distances_to_race_ids[this_dist]
 
+    # Add races
+    table_data['race'].clear()
+    for dist in distances_to_race_ids:
+        
+        # Make a copy of common race info
+        race_info = dict(common_race_info)
+        
+        # Add the distance and race id to the copy
+        race_info['dist'] = dist
+        race_info['id'] = distances_to_race_ids[dist]
 
-        # Split out and copy race with new id somewhere around here
-
-        result['dist'] = this_dist
-
-    race_info['id'] = current_race_id
-    add_to_each_row(results, {"race_id":current_race_id})
-
-
-
+        # Add the race to the race table
+        table_data['race'].append(race_info)
+        
 
 def add_to_each_row(dictionary_list, extra):
     for row in dictionary_list:
