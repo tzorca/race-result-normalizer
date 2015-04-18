@@ -102,7 +102,7 @@ def parse_file(filename):
 
     add_birthdate_lte(table_data)
     assign_distances_and_race_ids(table_data)
-
+    
     return table_data
 
 def rename_columns(all_table_data, table_defs):
@@ -136,17 +136,18 @@ def assign_distances_and_race_ids(table_data):
     # Assign distances and get race ID for each distance
     distances_to_race_ids = {}
     for result in results:
-
-        if not result.get('pace'):
-            result['race_id'] = initial_current_race_id
-            continue
-
+        
         time = result.get('gun_time') or result.get('net_time')
-
-        if time:
-            this_dist = round(time / result['pace'], 2)
+        
+        if not result.get('pace'):
+            # Assume pace is the same as the time
+            result['pace'] = time
+            this_dist = 1
         else:
-            this_dist = None
+            if time:
+                this_dist = round(time / result['pace'], 2)
+            else:
+                this_dist = None
 
         # Save this distance if no distances have been saved yet
         if len(distances_to_race_ids) == 0:
