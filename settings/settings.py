@@ -39,6 +39,7 @@ TABLE_DEFS = {
         "name": "race",
         "columns": {
             "id": "int not null primary key",
+            "series_id": "int",
             "date": "date",
             "time": "time",
             "name": "text",
@@ -58,6 +59,17 @@ TABLE_DEFS = {
             "name": "text",
             "sex": "text",
             "approximate_birthdate": "date"
+        },
+        "column_renames": {
+        }
+    },
+              
+    "series": {
+        "name": "series",
+        "columns": {
+            "id": "int not null primary key",
+            "name": "text",
+            "month": "int"
         },
         "column_renames": {
         }
