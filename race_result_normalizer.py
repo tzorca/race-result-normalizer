@@ -1,6 +1,7 @@
 import os
 import sys
 import pymysql
+import warnings
 import re
 from processors import result_parser, race_parser, runner_matcher,\
     series_matcher
@@ -137,16 +138,15 @@ def assign_distances_and_race_ids(table_data):
     for result in results:
         
         time = result.get('gun_time') or result.get('net_time')
+        if not time:
+            # Skip results without times
+            continue
         
+        # If no pace exists, assume pace is the same as the time
         if not result.get('pace'):
-            # Assume pace is the same as the time
             result['pace'] = time
-            this_dist = 1
-        else:
-            if time:
-                this_dist = round(time / result['pace'], 2)
-            else:
-                this_dist = None
+
+        this_dist = round(time / result['pace'], 2)
 
         # Save this distance if no distances have been saved yet
         if len(distances_to_race_ids) == 0:

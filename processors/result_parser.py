@@ -118,13 +118,6 @@ def filter_bad_resultset(filename, resultset):
         metrics.add_error_file(filename, "blank_name_ratio > BLANK_CUTOFF_RATIO")
         return True
 
-    blank_time_ratio = data_helper.get_blank_ratio(resultset, "Guntime")
-    blank_time_ratio += data_helper.get_blank_ratio(resultset, "Nettime")
-    blank_time_ratio += data_helper.get_blank_ratio(resultset, "Time")
-    if (blank_time_ratio > BLANK_CUTOFF_RATIO):
-        metrics.add_error_file(filename, "blank_time_ratio > BLANK_CUTOFF_RATIO")
-        return True
-
     return False
 
 
