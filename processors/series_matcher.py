@@ -1,4 +1,13 @@
 from collections import defaultdict
+import re
+
+SERIES_NAME_PATTERNS_TO_REMOVE = [
+    # Year at start of name
+    re.compile(r'^(2\d{3} )'),
+    
+    # Year at end of name
+    re.compile(r'( 2\d{3})$')
+]
 
 def match_series(races):
     # Group races by month
@@ -12,7 +21,11 @@ def match_series(races):
         name_groups = defaultdict( list )
         
         for race in races_by_month[month]:
-            name_groups[race['name']].append(race)
+            series_name = race['name'].strip()
+            for pattern in SERIES_NAME_PATTERNS_TO_REMOVE:
+                series_name = re.sub(pattern, "", series_name)
+            
+            name_groups[series_name].append(race)
 
         races_by_month_and_name[month] = name_groups
 
@@ -24,7 +37,6 @@ def match_series(races):
         for name in month_specific_races_by_name:
             series_list.append({"id": series_id, "name": name, "month": month})
             series_races = month_specific_races_by_name[name]
-            print(month_specific_races_by_name)
             for race in series_races:
                 race['series_id'] = series_id
                 
