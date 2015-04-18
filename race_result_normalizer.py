@@ -129,7 +129,6 @@ def add_birthdate_lte(table_data):
 
 def assign_distances_and_race_ids(table_data):
     global current_race_id
-    initial_current_race_id = current_race_id
     results = table_data['result']
     common_race_info = table_data['race'][0]
     
@@ -190,11 +189,5 @@ def assign_distances_and_race_ids(table_data):
         # Add the race to the race table
         table_data['race'].append(race_info)
         
-
-def add_to_each_row(dictionary_list, extra):
-    for row in dictionary_list:
-        row.update(extra)
-
-
 if __name__ == "__main__":
     main()
