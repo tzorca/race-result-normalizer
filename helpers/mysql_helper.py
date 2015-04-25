@@ -62,6 +62,13 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
     cursor.close()
     db_connection.commit()
 
+
+def run_commands(db_connection: pymysql.Connection, command_list):
+    cursor = db_connection.cursor()
+    for command in command_list:
+        cursor.execute(command) 
+    cursor.close()
+    db_connection.commit()
             
 IDENTIFIER_VALIDATOR = re.compile(r'^[0-9a-zA-Z_\$]+$');
 def validate_identifier(name):

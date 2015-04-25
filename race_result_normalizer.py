@@ -1,13 +1,12 @@
 import os
 import sys
 import pymysql
-import warnings
 import re
-from processors import result_parser, race_parser, runner_matcher,\
+from processors import result_parser, race_parser, runner_matcher, \
     series_matcher
 import metrics
 from helpers import mysql_helper
-from settings import settings
+from settings import settings, manual_fixes
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
 from dateutil.relativedelta import relativedelta
 
@@ -30,6 +29,9 @@ def main():
                                         charset="utf8")
         for table_name in table_data:
             save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
+            
+        mysql_helper.run_commands(db_connection, manual_fixes.fixes)
+        
         db_connection.close()
 
         metrics.print_error_files()
@@ -103,7 +105,7 @@ def parse_file(filename):
 
     add_birthdate_lte(table_data)
     assign_distances_and_race_ids(table_data)
-    
+
     return table_data
 
 def rename_columns(all_table_data, table_defs):
@@ -132,16 +134,16 @@ def assign_distances_and_race_ids(table_data):
     global current_race_id
     results = table_data['result']
     common_race_info = table_data['race'][0]
-    
+
     # Assign distances and get race ID for each distance
     distances_to_race_ids = {}
     for result in results:
-        
+
         time = result.get('gun_time') or result.get('net_time')
         if not time:
             # Skip results without times
             continue
-        
+
         # If no pace exists, assume pace is the same as the time
         if not result.get('pace'):
             result['pace'] = time
@@ -172,22 +174,22 @@ def assign_distances_and_race_ids(table_data):
                 distances_to_race_ids[this_dist] = current_race_id
             else:
                 this_dist = closest_dist
-        
+
         result['race_id'] = distances_to_race_ids[this_dist]
 
     # Add races
     table_data['race'].clear()
     for dist in distances_to_race_ids:
-        
+
         # Make a copy of common race info
         race_info = dict(common_race_info)
-        
+
         # Add the distance and race id to the copy
         race_info['dist'] = dist
         race_info['id'] = distances_to_race_ids[dist]
 
         # Add the race to the race table
         table_data['race'].append(race_info)
-        
+
 if __name__ == "__main__":
     main()
