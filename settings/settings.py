@@ -69,7 +69,8 @@ TABLE_DEFS = {
         "columns": {
             "id": "int not null primary key",
             "name": "text",
-            "month": "int"
+            "month": "int",
+            "dist": "decimal(5,1)"
         },
         "column_renames": {
         }
