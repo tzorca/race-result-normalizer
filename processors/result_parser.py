@@ -110,12 +110,12 @@ def normalize(mapped_results):
 BLANK_CUTOFF_RATIO = 0.05
 def filter_bad_resultset(filename, resultset):
     if (not resultset or len(resultset) == 0):
-        metrics.add_error_file(filename, "No result entries found")
+        metrics.add_error(filename, "No result entries found")
         return True
 
     blank_name_ratio = data_helper.get_blank_ratio(resultset, "Name")
     if (blank_name_ratio > BLANK_CUTOFF_RATIO):        
-        metrics.add_error_file(filename, "blank_name_ratio > BLANK_CUTOFF_RATIO")
+        metrics.add_error(filename, "blank_name_ratio > BLANK_CUTOFF_RATIO")
         return True
 
     return False

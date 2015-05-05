@@ -2,10 +2,11 @@ import os
 import sys
 import pymysql
 import re
+import metrics
+from collections import defaultdict
+from helpers import mysql_helper
 from processors import result_parser, race_parser, runner_matcher, \
     series_matcher
-import metrics
-from helpers import mysql_helper
 from settings import settings, manual_fixes
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
 from dateutil.relativedelta import relativedelta
@@ -29,12 +30,12 @@ def main():
                                         charset="utf8")
         for table_name in table_data:
             save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
-            
+
         mysql_helper.run_commands(db_connection, manual_fixes.fixes)
-        
+
         db_connection.close()
 
-        metrics.print_error_files()
+        metrics.print_errors()
         print("Finished.")
 
 def save_to_db(db_connection, dataset, table_def):
@@ -42,6 +43,12 @@ def save_to_db(db_connection, dataset, table_def):
     mysql_helper.drop_table(db_connection, table_def["name"])
     mysql_helper.create_table(db_connection, table_def)
     mysql_helper.insert_rows(db_connection, table_def, dataset)
+
+
+EXCLUDED_FILE_DATA_PATTERNS = [
+    # Duplicate files
+    re.compile(r'^[*]{4} OVERALL .*? [*]{4}$', re.MULTILINE)
+]
 
 current_race_id = 1
 def parse_files(filename_list):
@@ -58,14 +65,42 @@ def parse_files(filename_list):
                 table_data[table_name].extend(file_parse[table_name])
         current_race_id += 1
 
+    combine_same_races(table_data)
+
     return table_data
 
-
-
-EXCLUDED_FILE_DATA_PATTERNS = [
-    # Duplicate files
-    re.compile(r'^[*]{4} OVERALL .*? [*]{4}$', re.MULTILINE)
-]
+def combine_same_races(table_data):
+    same_race_groups = defaultdict(list)
+    for race in table_data['race']:
+        key = (
+            race.get('name'),
+            race.get('date'),
+            race.get('location'),
+            race.get('dist')
+        )
+        same_race_groups[key].append(race)
+    
+    id_remappings = {}
+    new_race_id = 1
+    new_races = []
+    for same_race_key in same_race_groups:
+        same_race_group = same_race_groups[same_race_key]
+        same_race_group[0]['id'] = new_race_id
+        new_races.append(same_race_group[0])
+        for race in same_race_group:
+            id_remappings[race['id']] = new_race_id
+        
+        new_race_id += 1
+    
+    for result in table_data['result']:
+        if not 'race_id' in result:
+            metrics.add_error("", "No race_id in result")
+            continue
+        orig_race_id = result['race_id']
+        if orig_race_id in id_remappings:
+            result['race_id'] = id_remappings[orig_race_id]
+    
+    table_data['race'] = new_races
 
 
 DIFF_DIST_RATIO = .25
@@ -75,12 +110,12 @@ def parse_file(filename):
 
     for pattern in EXCLUDED_FILE_DATA_PATTERNS:
         if pattern.search(data_from_file):
-            metrics.add_error_file(filename, "Excluded file data pattern: " + str(pattern))
+            metrics.add_error(filename, "Excluded file data pattern: " + str(pattern))
             return
 
     header_lines = result_parser.get_header(data_from_file)
     if not header_lines:
-        metrics.add_error_file(filename, "Could not read header")
+        metrics.add_error(filename, "Could not read header")
         return
 
     race_info = race_parser.get_race_info(result_parser.filter_to_result_lines(header_lines, data_from_file, True))
@@ -89,11 +124,11 @@ def parse_file(filename):
     race_info['filename'] = filename
 
     if not len(race_info['name'].strip()):
-        metrics.add_error_file(filename, "No race name found")
+        metrics.add_error(filename, "No race name found")
         return
 
     if not 'date' in race_info:
-        metrics.add_error_file(filename, "No race date found")
+        metrics.add_error(filename, "No race date found")
         return
 
     results = result_parser.get_results(filename, header_lines, data_from_file)
