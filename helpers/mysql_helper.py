@@ -37,7 +37,7 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
     column_names_string = "(" + ",".join([c for c in column_defs if validate_identifier(c)]) + ")"
     
     # Build first part of SQL string
-    insert_sql_start = "insert into " + table_def["name"] + " " + column_names_string + " values "
+    insert_sql_start = "insert ignore into " + table_def["name"] + " " + column_names_string + " values "
 
     placeholders_string = ["(" + ",".join(["%s"]*len(column_defs))  + ") "]
 

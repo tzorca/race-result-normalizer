@@ -3,20 +3,20 @@ TABLE_DEFS = {
         "name": "result",
         "columns": {
             "id": "int not null primary key auto_increment",
-            "bib_num": "text",
+            "bib_num": "varchar(255)",
             "age": "text",
-            "division": "text",
-            "division_total": "text",
+            "division": "varchar(255)",
+            "division_total": "varchar(255)",
             "gun_time": "decimal(7,4)",
             "net_time": "decimal(7,4)",
             "pace": "decimal(7,4)",
-            "place": "text",
+            "place": "varchar(255)",
             "race_id": "integer",
             "runner_id": "integer"
         },
         "ext_table_def": """
             CONSTRAINT `UQ_result` UNIQUE NONCLUSTERED (
-                `race_id`, `runner_id`, `gun_time`, `net_time`
+                `race_id`, `runner_id`, `division_total`, `bib_num`
             )
         """,
         "column_renames": {
@@ -43,8 +43,8 @@ TABLE_DEFS = {
             "date": "date",
             "time": "time",
             "name": "text",
-            "location": "text",
-            "certification": "text",
+            "location": "varchar(255)",
+            "certification": "varchar(255)",
             "filename": "text",
             "dist": "decimal(5,2)"
         },
