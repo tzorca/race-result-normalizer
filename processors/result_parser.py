@@ -1,5 +1,5 @@
 import re
-import metrics
+from metrics import metrics
 from helpers import field_normalizers, data_helper
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')

@@ -2,7 +2,7 @@ import os
 import sys
 import pymysql
 import re
-import metrics
+from metrics import metrics
 from collections import defaultdict
 from helpers import mysql_helper
 from processors import result_parser, race_parser, runner_matcher, \
