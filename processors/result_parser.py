@@ -1,5 +1,5 @@
 import re
-from metrics import metrics
+import metrics
 from helpers import field_normalizers, data_helper
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
@@ -14,6 +14,7 @@ def get_results(filename, header_lines, data_from_file):
         return None
     
     normalize(mapped_results)
+    mapped_results = remove_bad_results(filename, mapped_results)
     
     return mapped_results
 
@@ -112,13 +113,23 @@ def filter_bad_resultset(filename, resultset):
     if (not resultset or len(resultset) == 0):
         metrics.add_error(filename, "No result entries found")
         return True
-
-    blank_name_ratio = data_helper.get_blank_ratio(resultset, "Name")
-    if (blank_name_ratio > BLANK_CUTOFF_RATIO):        
-        metrics.add_error(filename, "blank_name_ratio > BLANK_CUTOFF_RATIO")
-        return True
-
+    
     return False
 
 
+def remove_bad_results(filename, resultset):
+    output_resultset = []
+    for result in resultset:
+        name = result.get('Name')
+        if not name or len(name) == 0:
+            metrics.add_error(filename, "Blank name")
+            continue
+        
+        if '*' in name:
+            metrics.add_error(filename, "Invalid name")
+            continue
+        
+        output_resultset.append(result)
+    return output_resultset
+    
 

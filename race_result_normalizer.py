@@ -2,7 +2,7 @@ import os
 import sys
 import pymysql
 import re
-from metrics import metrics
+import metrics
 from collections import defaultdict
 from helpers import mysql_helper
 from processors import result_parser, race_parser, runner_matcher, \
@@ -66,6 +66,7 @@ def parse_files(filename_list):
         current_race_id += 1
 
     combine_same_races(table_data)
+
 
     return table_data
 

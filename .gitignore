@@ -4,3 +4,4 @@ __pycache__
 secure_settings.py
 *.tsv
 /data/
+.idea
