@@ -2,11 +2,12 @@ import os
 import sys
 import pymysql
 import re
-import metrics
+from metrics import metrics
+from containers.state import RaceParseState
 from collections import defaultdict
 from helpers import mysql_helper
 from processors import result_parser, race_parser, runner_matcher, \
-    series_matcher
+    series_matcher, race_distance_splitter
 from settings import settings, manual_fixes
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
 from dateutil.relativedelta import relativedelta
@@ -50,20 +51,21 @@ EXCLUDED_FILE_DATA_PATTERNS = [
     re.compile(r'^[*]{4} OVERALL .*? [*]{4}$', re.MULTILINE)
 ]
 
-current_race_id = 1
 def parse_files(filename_list):
-    global current_race_id
+    
+    race_parse_state = RaceParseState("", 1)
     table_data = {"race": [], "result": []}
 
     for filename in filename_list:
         if not filename.endswith(".txt"):
             continue
-
-        file_parse = parse_file(filename)
+        
+        race_parse_state.filename = filename
+        file_parse = parse_file(race_parse_state)
         if file_parse:
             for table_name in file_parse:
                 table_data[table_name].extend(file_parse[table_name])
-        current_race_id += 1
+            race_parse_state.race_id += 1
 
     combine_same_races(table_data)
 
@@ -103,8 +105,8 @@ def combine_same_races(table_data):
     table_data['race'] = new_races
 
 
-DIFF_DIST_RATIO = .25
-def parse_file(filename):
+def parse_file(race_parse_state):
+    filename = race_parse_state.filename
     with open(filename, "r") as input_file:
         data_from_file = input_file.read()
 
@@ -139,7 +141,7 @@ def parse_file(filename):
     rename_columns(table_data, settings.TABLE_DEFS)
 
     add_birthdate_lte(table_data)
-    assign_distances_and_race_ids(table_data)
+    race_distance_splitter.assign_distances_and_race_ids(race_parse_state, table_data)
 
     return table_data
 
@@ -148,12 +150,10 @@ def rename_columns(all_table_data, table_defs):
         column_renames = table_defs[table_name]['column_renames']
         table_data = all_table_data[table_name]
         for row in table_data:
-            for column_name in row:
-                value = row[column_name]
-                if column_name in column_renames:
-                    new_name = column_renames[column_name]
-                    row[new_name] = value
-                    del row[column_name]
+            for old_name in row:
+                if old_name in column_renames:
+                    new_name = column_renames[old_name]
+                    row[new_name] = row.pop(old_name)
 
 
 def add_birthdate_lte(table_data):
@@ -165,66 +165,6 @@ def add_birthdate_lte(table_data):
                 continue
             result['birthdate_lte'] = race_info['date'] - relativedelta(years=int(age))
 
-def assign_distances_and_race_ids(table_data):
-    global current_race_id
-    results = table_data['result']
-    common_race_info = table_data['race'][0]
-
-    # Assign distances and get race ID for each distance
-    distances_to_race_ids = {}
-    for result in results:
-
-        time = result.get('gun_time') or result.get('net_time')
-        if not time:
-            # Skip results without times
-            continue
-
-        # If no pace exists, assume pace is the same as the time
-        if not result.get('pace'):
-            result['pace'] = time
-
-        this_dist = round(time / result['pace'], 2)
-
-        # Save this distance if no distances have been saved yet
-        if len(distances_to_race_ids) == 0:
-            distances_to_race_ids[this_dist] = current_race_id
-
-        # Save this distance if it is different from the closest existing saved distance
-        elif this_dist:
-
-            # Get lowest ratio between saved distance groups and this group
-            lowest_diff_ratio = 1
-            closest_dist = 0
-            for dist in distances_to_race_ids:
-                if not dist:
-                    continue
-
-                diff_ratio = abs(this_dist - dist) / dist
-                if not lowest_diff_ratio or diff_ratio < lowest_diff_ratio:
-                    lowest_diff_ratio = diff_ratio
-                    closest_dist = dist
-
-            if lowest_diff_ratio > DIFF_DIST_RATIO:
-                current_race_id += 1
-                distances_to_race_ids[this_dist] = current_race_id
-            else:
-                this_dist = closest_dist
-
-        result['race_id'] = distances_to_race_ids[this_dist]
-
-    # Add races
-    table_data['race'].clear()
-    for dist in distances_to_race_ids:
-
-        # Make a copy of common race info
-        race_info = dict(common_race_info)
-
-        # Add the distance and race id to the copy
-        race_info['dist'] = dist
-        race_info['id'] = distances_to_race_ids[dist]
-
-        # Add the race to the race table
-        table_data['race'].append(race_info)
 
 if __name__ == "__main__":
     main()
