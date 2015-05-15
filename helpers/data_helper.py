@@ -64,3 +64,23 @@ def remove_datetime_outliers(datetime_population, sigmas):
 
 def split_into_sublists(the_list, sublist_size):
     return [the_list[x:x+sublist_size] for x in range(0, len(the_list), sublist_size)]
+
+
+def lowest_percent_diff_element(the_dict, the_number):
+    lowest_percent_diff = None
+    closest_num = None
+    for num in the_dict:
+        if not num:
+            continue
+
+        percent_diff = get_abs_percent_diff(the_number, num)
+        if not lowest_percent_diff or percent_diff < lowest_percent_diff:
+            lowest_percent_diff = percent_diff
+            closest_num = num
+        
+    return closest_num
+    
+def get_abs_percent_diff(num_a, num_b):
+    return abs(num_a - num_b) / num_b
+
+            

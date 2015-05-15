@@ -1,6 +1,8 @@
 from containers.state import RaceParseState
+from helpers import data_helper
+from metrics import metrics
 
-DIFF_DIST_RATIO = .25
+MIN_PERCENT_DIFF_FOR_NEW_DIST = .25
 def assign_distances_and_race_ids(race_parse_state: RaceParseState, table_data):
     results = table_data['result']
     common_race_info = table_data['race'][0]
@@ -16,50 +18,31 @@ def assign_distances_and_race_ids(race_parse_state: RaceParseState, table_data):
             continue
 
         # If no pace exists, assume pace is the same as the time
-        if not result.get('pace'):
-            result['pace'] = time
+        result['pace'] = result.get('pace') or time
 
-        this_dist = round(time / result['pace'], 2)
+        # Calculate distance to the nearest .1
+        this_dist = round(time / result['pace'], 1)
+        
+        if not this_dist:
+            metrics.add_error("Race distance calculated as null.", race_parse_state.filename)
 
-        # Save this distance if no distances have been saved yet
         if len(distances_to_race_ids) == 0:
             distances_to_race_ids[this_dist] = race_parse_state.race_id
+        else:
+            closest_dist = data_helper.lowest_percent_diff_element(distances_to_race_ids, this_dist)
+            closest_percent_diff = data_helper.get_abs_percent_diff(this_dist, closest_dist)
 
-        # Save this distance if it is different from the closest existing saved distance
-        elif this_dist:
-
-            # Get lowest ratio between saved distance groups and this group
-            lowest_diff_ratio = 1
-            closest_dist = 0
-            for dist in distances_to_race_ids:
-                if not dist:
-                    continue
-
-                diff_ratio = abs(this_dist - dist) / dist
-                if not lowest_diff_ratio or diff_ratio < lowest_diff_ratio:
-                    lowest_diff_ratio = diff_ratio
-                    closest_dist = dist
-
-            if lowest_diff_ratio > DIFF_DIST_RATIO:
+            if closest_percent_diff > MIN_PERCENT_DIFF_FOR_NEW_DIST:
                 race_parse_state.race_id += 1
                 distances_to_race_ids[this_dist] = race_parse_state.race_id
-            else:
+            else: # Converge this distance to the closest if not significantly different
                 this_dist = closest_dist
 
         result['race_id'] = distances_to_race_ids[this_dist]
 
-
     # Add races
     table_data['race'].clear()
     for dist in distances_to_race_ids:
+        race_specific_info = {'dist': dist, 'id': distances_to_race_ids[dist]}
 
-        # Make a copy of common race info
-        race_info = dict(common_race_info)
-
-        # Add the distance and race id to the copy
-        race_info
-        race_info['dist'] = dist
-        race_info['id'] = distances_to_race_ids[dist]
-
-        # Add the race to the race table
-        table_data['race'].append(race_info)
+        table_data['race'].append(dict(common_race_info, **race_specific_info))
