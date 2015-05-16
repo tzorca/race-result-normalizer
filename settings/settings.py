@@ -46,7 +46,7 @@ TABLE_DEFS = {
             "location": "varchar(255)",
             "certification": "varchar(255)",
             "filename": "text",
-            "dist": "decimal(5,2)"
+            "dist": "decimal(5,1)"
         },
         "column_renames": {
         }
