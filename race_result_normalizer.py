@@ -4,10 +4,9 @@ import pymysql
 import re
 from metrics import metrics
 from containers.state import RaceParseState
-from collections import defaultdict
 from helpers import mysql_helper
 from processors import result_parser, race_parser, runner_matcher, \
-    series_matcher, race_distance_splitter
+    series_matcher, race_distance_splitter, race_combiner
 from settings import settings, manual_fixes
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
 from dateutil.relativedelta import relativedelta
@@ -39,8 +38,8 @@ def main():
         metrics.print_errors()
         print("Finished.")
 
-def save_to_db(db_connection, dataset, table_def):
 
+def save_to_db(db_connection, dataset, table_def):
     mysql_helper.drop_table(db_connection, table_def["name"])
     mysql_helper.create_table(db_connection, table_def)
     mysql_helper.insert_rows(db_connection, table_def, dataset)
@@ -52,7 +51,6 @@ EXCLUDED_FILE_DATA_PATTERNS = [
 ]
 
 def parse_files(filename_list):
-    
     race_parse_state = RaceParseState("", 1)
     table_data = {"race": [], "result": []}
 
@@ -67,42 +65,9 @@ def parse_files(filename_list):
                 table_data[table_name].extend(file_parse[table_name])
             race_parse_state.race_id += 1
 
-    combine_same_races(table_data)
-
+    race_combiner.combine_same_races(table_data)
 
     return table_data
-
-def combine_same_races(table_data):
-    same_race_groups = defaultdict(list)
-    for race in table_data['race']:
-        key = (
-            race.get('name'),
-            race.get('date'),
-            race.get('dist')
-        )
-        same_race_groups[key].append(race)
-    
-    id_remappings = {}
-    new_races = []
-    for same_race_key in same_race_groups:
-        same_race_group = same_race_groups[same_race_key]
-        new_race_id = same_race_group[0]['id']
-        new_races.append(same_race_group[0])
-        for race in same_race_group:
-            id_remappings[race['id']] = new_race_id
-    
-    for result in table_data['result']:
-        if not 'race_id' in result:
-            metrics.add_error("", "No race_id in result")
-            continue
-        orig_race_id = result['race_id']
-        
-        if not orig_race_id in id_remappings:
-            metrics.add_error(orig_race_id, "No remapping exists for race_id")
-            continue
-        result['race_id'] = id_remappings[orig_race_id]
-    
-    table_data['race'] = new_races
 
 
 def parse_file(race_parse_state):
@@ -144,6 +109,7 @@ def parse_file(race_parse_state):
     race_distance_splitter.assign_distances_and_race_ids(race_parse_state, table_data)
 
     return table_data
+
 
 def rename_columns(all_table_data, table_defs):
     for table_name in all_table_data:
