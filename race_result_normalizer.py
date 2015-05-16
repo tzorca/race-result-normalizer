@@ -23,7 +23,7 @@ def main():
         table_data = parse_files(filenames)
         table_data['runner'] = runner_matcher.match_runners(table_data['result'])
         table_data['series'] = series_matcher.match_series(table_data['race'])
-
+        
         print("Beginning database export...")
         db_connection = pymysql.connect(host=DB_HOST, user=DB_USER,
                                         passwd=DB_PASSWORD, database=DB_DATABASE,
