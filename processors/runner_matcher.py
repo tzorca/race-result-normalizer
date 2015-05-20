@@ -10,7 +10,7 @@ DUMMY_DATE = datetime.datetime(datetime.MINYEAR, 1, 1)
 
 def match_runners(all_results):
     runners = []
-    runner_id = 0
+    runner_id = 1
     
     # Group all_results by name and sex
     results_by_name_and_sex = defaultdict( list )
@@ -31,9 +31,11 @@ def match_runners(all_results):
         name = key[0]
         sex = key[1]
         for result_cluster in result_clusters:
-            result['runner_id'] = runner_id
             approximate_birthdate = approximate_birthdate_from_results(result_cluster)
                     
+            for result in result_cluster:
+                result['runner_id'] = runner_id
+                
             runners.append({
                 'id': runner_id, 
                 'name': name, 
