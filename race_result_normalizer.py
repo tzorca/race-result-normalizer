@@ -6,7 +6,7 @@ from metrics import metrics
 from containers.state import RaceParseState
 from helpers import mysql_helper
 from processors import result_parser, race_parser, runner_matcher, \
-    series_matcher, race_distance_splitter, race_combiner
+    series_matcher, race_distance_splitter, race_combiner, stat_field_creater
 from settings import settings, manual_fixes
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
 from dateutil.relativedelta import relativedelta
@@ -23,6 +23,7 @@ def main():
         table_data = parse_files(filenames)
         table_data['runner'] = runner_matcher.match_runners(table_data['result'])
         table_data['series'] = series_matcher.match_series(table_data['race'])
+        stat_field_creater.add_percentile_field(table_data['result'])
         
         print("Beginning database export...")
         db_connection = pymysql.connect(host=DB_HOST, user=DB_USER,

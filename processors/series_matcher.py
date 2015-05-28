@@ -23,7 +23,6 @@ def match_series(races):
         series_human_name = create_series_human_name(race['name'])
         series_code_name = codify_series_name(series_human_name)
         
-        print(series_code_name)
         rounded_dist = round(race['dist'], 1)
         key = (month, series_code_name, rounded_dist)
         

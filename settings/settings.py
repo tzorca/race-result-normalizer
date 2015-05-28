@@ -12,7 +12,8 @@ TABLE_DEFS = {
             "pace": "decimal(7,4)",
             "place": "varchar(255)",
             "race_id": "integer",
-            "runner_id": "integer"
+            "runner_id": "integer",
+            "percentile": "decimal(4,1)"
         },
         "ext_table_def": """
             CONSTRAINT `UQ_result` UNIQUE NONCLUSTERED (

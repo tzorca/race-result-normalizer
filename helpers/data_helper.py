@@ -1,5 +1,6 @@
 import datetime
 import statistics
+from collections import defaultdict
 
 def cluster_list_of_dicts(list_dicts, key, max_cluster_count, min_difference):
     # Get differences between each dictionary[key] (and indexes)
@@ -80,7 +81,21 @@ def lowest_percent_diff_element(the_dict, the_number):
         
     return closest_num
     
+
 def get_abs_percent_diff(num_a, num_b):
     return abs(num_a - num_b) / num_b
+
+
+def group(dataset, key_name):
+    grouped_dataset = defaultdict(list)
+    for element in dataset:
+        if type(element) is dict:
+            key_value = element.get(key_name)
+        else:
+            key_value = getattr(element, key_name)
+            
+        grouped_dataset[key_value].append(element)
+    return grouped_dataset
+        
 
             
