@@ -1,6 +1,7 @@
 import pymysql
 import re
 from helpers import data_helper
+import time
 
 def create_table(db_connection: pymysql.Connection, table_def):
     column_defs = table_def["columns"]
@@ -49,7 +50,10 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
         parameters = []
         for row in batch:
             for column_name in column_defs:
-                parameters.append(row.get(column_name))
+                field_value = row.get(column_name)
+                if type(field_value) is time.struct_time:
+                    field_value = data_helper.get_time_str(field_value)
+                parameters.append(field_value)
         
         insert_sql = insert_sql_start + ",".join(placeholders_string * len(batch)) + ";"
         try:
@@ -57,7 +61,7 @@ def insert_rows(db_connection: pymysql.Connection, table_def, rows):
         except Exception as e:
             print(e)
             print(insert_sql)
-            print(parameters)
+            print(batch)
         
     cursor.close()
     db_connection.commit()

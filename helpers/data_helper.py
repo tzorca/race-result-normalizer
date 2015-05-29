@@ -1,4 +1,4 @@
-import datetime
+import datetime, time
 import statistics
 from collections import defaultdict
 
@@ -98,4 +98,6 @@ def group(dataset, key_name):
     return grouped_dataset
         
 
+def get_time_str(struct_time_val):
+    return time.strftime('%H:%M:%S', struct_time_val)
             

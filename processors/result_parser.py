@@ -104,7 +104,11 @@ def normalize(mapped_results):
     for row in mapped_results:
         for time_field in TIME_FIELDS:
             if time_field in row:
-                row[time_field] = field_normalizers.time_string_to_minutes_decimal(row[time_field])
+                time = field_normalizers.time_string_to_minutes_decimal(row[time_field])
+                if time:
+                    row[time_field] = round(time, 1)
+                else:
+                    row[time_field] = None
     return mapped_results
 
 
