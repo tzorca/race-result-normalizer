@@ -4,6 +4,9 @@ SERIES_NAME_PATTERNS_TO_REMOVE = [
     # Year at start of name
     re.compile(r'^2\d{3} '),
     
+    # Year at end of name
+    re.compile(r' 2\d{3}$'),
+    
     # Annual text
     re.compile(r'(\d+)(st|nd|rd|th) Annual ', re.IGNORECASE),
     
