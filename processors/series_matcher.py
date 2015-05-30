@@ -1,6 +1,9 @@
 import re
 
 SERIES_NAME_PATTERNS_TO_REMOVE = [
+    # Space at end of name
+    re.compile(r' +$'),
+                                  
     # Year at start of name
     re.compile(r'^2\d{3} '),
     
@@ -9,9 +12,6 @@ SERIES_NAME_PATTERNS_TO_REMOVE = [
     
     # Annual text
     re.compile(r'(\d+)(st|nd|rd|th) Annual ', re.IGNORECASE),
-    
-    # Year at end of name
-    re.compile(r' 2\d{3}$'),
     
     # Commas
     re.compile(r',')
