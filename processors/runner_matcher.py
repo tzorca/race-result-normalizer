@@ -12,38 +12,61 @@ def match_runners(all_results):
     runners = []
     runner_id = 1
     
-    # Group all_results by name and sex
-    results_by_name_and_sex = defaultdict( list )
+    # Group all_results by name, then sex
+    results_by_name_then_sex = defaultdict(lambda : defaultdict(list))
     for result in all_results:
-        results_by_name_and_sex[(result.get('runner_name'), result.get('sex'))].append(result)
+        results_by_name_then_sex[result.get('runner_name')][result.get('sex')].append(result)
     
     # Loop through grouped results
-    for key in results_by_name_and_sex:
-        current_results = results_by_name_and_sex[key]
+    for name in results_by_name_then_sex:
+        # Get results and sort by birthdate_lte
+        specific_name_results = results_by_name_then_sex[name]
+        specific_name_male_results = sorted(specific_name_results.get('M') or [], 
+            key=sort_by_birthdate_lte_or_dummy)
+        specific_name_female_results = sorted(specific_name_results.get('F') or [],
+            key=sort_by_birthdate_lte_or_dummy)
+        specific_name_blank_gender_results = sorted(specific_name_results.get('') or [],
+            key=sort_by_birthdate_lte_or_dummy)
+            
+        # Try generating clusters for males + blanks; females
+        male_and_blank_results = list(specific_name_male_results)
+        male_and_blank_results.extend(specific_name_blank_gender_results)
+        attempt_1 = {
+            'M': cluster_results_by_birthdate_lte(male_and_blank_results),
+            'F': cluster_results_by_birthdate_lte(specific_name_female_results)
+        }
         
-        # Sort current_results by birthdate_lte
-        current_results = sorted(current_results, key=sort_by_birthdate_lte_or_dummy)
-
-        # Generate clusters from birthdate_lte       
-        result_clusters = cluster_results_by_birthdate_lte(current_results)
+        # Try generating clusters for females + blanks; males 
+        female_and_blank_results = list(specific_name_female_results)
+        female_and_blank_results.extend(specific_name_blank_gender_results)
+        attempt_2 = {
+            'M': cluster_results_by_birthdate_lte(specific_name_male_results),
+            'F': cluster_results_by_birthdate_lte(female_and_blank_results)
+        }
+        
+        # Pick the attempt with the lowest number of clusters
+        attempt_1_clusters = len(attempt_1['M']) + len(attempt_1['F'])
+        attempt_2_clusters = len(attempt_2['M']) + len(attempt_2['F'])
+        result_clusters_by_sex = attempt_1 if attempt_1_clusters < attempt_2_clusters else attempt_2
 
         # Create runners
-        name = key[0]
-        sex = key[1]
-        for result_cluster in result_clusters:
-            approximate_birthdate = approximate_birthdate_from_results(result_cluster)
-                    
-            for result in result_cluster:
-                result['runner_id'] = runner_id
+        for sex in result_clusters_by_sex:
+            result_clusters = result_clusters_by_sex[sex]
+            for result_cluster in result_clusters:
+                if len(result_cluster) == 0:
+                    continue
                 
-            runners.append({
-                'id': runner_id, 
-                'name': name, 
-                'sex': sex,
-                'approximate_birthdate': approximate_birthdate
-            })
-            runner_id += 1
-    
+                approximate_birthdate = approximate_birthdate_from_results(result_cluster)
+                name = result_cluster[0]['runner_name']
+                for result in result_cluster:
+                    result['runner_id'] = runner_id
+                    
+                runners.append({
+                    'id': runner_id, 'name': name, 'sex': sex,
+                    'approximate_birthdate': approximate_birthdate
+                })
+                runner_id += 1
+        
     return runners
 
 
