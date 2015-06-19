@@ -9,7 +9,11 @@ DIST_UNIT = "(kilometer|k|miler|miles|mile|mi)"
 
 ALL_PATTERN = re.compile('.*')
 TIME_PATTERN = re.compile(r'\d{1,2}:\d{2} ?(A|P)M')
-DATE_PATTERN = re.compile(MONTH + r' ?\d+, ?' + YEAR)
+
+
+DATE_PATTERN_1 = MONTH + r' ?\d+, ?' + YEAR
+DATE_PATTERN_2 = r'\d{1,2}/\d{1,2}/' + YEAR
+DATE_PATTERN = re.compile(r'(' + DATE_PATTERN_1 + r')|(' + DATE_PATTERN_2 + r')')
 LOCATION_PATTERN = re.compile(r'^\s*([A-Za-z ]{3,}, ){1,3}' + STATE)
 CERTIFICATION_PATTERN = re.compile(r'(?<=\().*(?=\))')
 
@@ -82,7 +86,7 @@ def get_race_info(non_result_lines):
     return race_info
 
 
-DATE_FORMATS = ["%B %d, %Y", "%B %d,%Y"]
+DATE_FORMATS = ["%B %d, %Y", "%B %d,%Y", "%m/%d/%Y"]
 TIME_FORMATS = ["%I:%M %p", "%I:%M%p"]
 
 
