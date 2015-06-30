@@ -1,53 +1,64 @@
 from containers.state import RaceParseState
 from helpers import data_helper
-from metrics import metrics
 from collections import defaultdict
 import numpy as np
 
+
 MIN_PERCENT_DIFF_FOR_NEW_DIST = .25
-def assign_distances_and_race_ids(race_parse_state: RaceParseState, table_data):
-    results = table_data['result']
+def assign_distances_and_race_ids(state: RaceParseState, table_data):
+    dist_grouped_results = group_by_distance(table_data['result'], 
+        MIN_PERCENT_DIFF_FOR_NEW_DIST)
+    
     common_race_info = table_data['race'][0]
 
-    # Assign distances and get race ID for each distance
-    distances_to_race_ids = {}
-    grouped_dists_to_real_dists = defaultdict(list)
+    table_data['race'].clear()
+    for dist_group in dist_grouped_results:
+        dist_specific_results = dist_grouped_results[dist_group]
+        
+        all_distances = [r['dist'] for r in dist_specific_results if r.get('dist')]
+        if len(all_distances) > 0:
+            real_dist = round(float(np.mean(all_distances)), 1)
+        else:
+            real_dist = None
+        
+        for result in dist_specific_results:
+            result['race_id'] = state.race_id
+        
+        race_specific_info = {'dist': real_dist, 'id': state.race_id}
+        table_data['race'].append(dict(common_race_info, **race_specific_info))
+        
+        state.race_id += 1
+
+
+def group_by_distance(results, dist_grouping_percent_diff):
+    dist_grouped_results = defaultdict(list) 
     for result in results:
 
         time = result.get('gun_time') or result.get('net_time')
         
-        # Skip results without times
+        # Results without times go to the None distance group
         if not time:
+            dist_grouped_results[None].append(result)
             continue
 
-        # If no pace exists, assume pace is the same as the time
+        # If no pace exists, assume pace is the same as time
         result['pace'] = result.get('pace') or time
 
-        actual_dist = time / result['pace']
-        grouped_dist = round(actual_dist, 1)
+        result['dist'] = time / result['pace']
+        grouped_dist = round(result['dist'], 1)
         
-        if not actual_dist:
-            metrics.add_error("Race distance calculated as null.", race_parse_state.filename)
-
-        if len(distances_to_race_ids) == 0:
-            distances_to_race_ids[grouped_dist] = race_parse_state.race_id
+        if len(dist_grouped_results) == 0:
+            dist_grouped_results[grouped_dist].append(result)
         else:
-            closest_dist = data_helper.lowest_percent_diff_element(distances_to_race_ids, grouped_dist)
+            closest_dist = data_helper.lowest_percent_diff_element(dist_grouped_results, grouped_dist)
             closest_percent_diff = data_helper.get_abs_percent_diff(grouped_dist, closest_dist)
 
-            if closest_percent_diff > MIN_PERCENT_DIFF_FOR_NEW_DIST:
-                race_parse_state.race_id += 1
-                distances_to_race_ids[grouped_dist] = race_parse_state.race_id
-            else: # Converge this distance to the closest if not significantly different
+            # If not significantly different, converge this distance to the closest
+            if closest_percent_diff < dist_grouping_percent_diff:
                 grouped_dist = closest_dist
 
-        result['race_id'] = distances_to_race_ids[grouped_dist]
-        grouped_dists_to_real_dists[grouped_dist].append(actual_dist)
+        dist_grouped_results[grouped_dist].append(result)
+        
+    return dist_grouped_results
 
-    # Add races
-    table_data['race'].clear()
-    for grouped_dist in distances_to_race_ids:
-        real_dist = round(float(np.mean(grouped_dists_to_real_dists[grouped_dist])), 1)
-        race_specific_info = {'dist': real_dist, 'id': distances_to_race_ids[grouped_dist]}
 
-        table_data['race'].append(dict(common_race_info, **race_specific_info))

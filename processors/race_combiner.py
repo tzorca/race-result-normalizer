@@ -18,7 +18,8 @@ def combine_same_races(table_data):
         new_race_id = same_race_group[0]['id']
         new_races.append(same_race_group[0])
         for race in same_race_group:
-            id_remappings[race['id']] = new_race_id
+            race_id = race['id']
+            id_remappings[race_id] = new_race_id
     
     for result in table_data['result']:
         if not 'race_id' in result:

@@ -133,6 +133,10 @@ def remove_bad_results(filename, resultset):
             metrics.add_error(filename, "Invalid name")
             continue
         
+        if not result.get('Nettime') and not result.get('Gunttime'):
+            metrics.add_error(filename, "Missing finish time")
+            continue
+        
         output_resultset.append(result)
     return output_resultset
     

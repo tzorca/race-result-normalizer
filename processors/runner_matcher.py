@@ -57,7 +57,7 @@ def match_runners(all_results):
                     continue
                 
                 approximate_birthdate = approximate_birthdate_from_results(result_cluster)
-                name = result_cluster[0]['runner_name']
+                name = result_cluster[0].get('runner_name')
                 for result in result_cluster:
                     result['runner_id'] = runner_id
                     

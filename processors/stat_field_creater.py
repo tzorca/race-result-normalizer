@@ -9,7 +9,6 @@ def add_percentile_field(result_list):
         times_for_race = [get_time(result) for result in results_for_race if get_time(result)]
         for result in results_for_race:
             time = get_time(result)
-            
             if time:
                 result['percentile'] = str(round(100-scipy.stats.percentileofscore(times_for_race, time), 1))
             else:

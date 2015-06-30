@@ -19,10 +19,15 @@ def main():
         path = sys.argv[1]
         filenames = [os.path.join(path, fn) for fn in os.listdir(path)]
 
-        print("Beginning parse...")
+        print("Parsing files...")
         table_data = parse_files(filenames)
+        print('Combining same races...')
+        race_combiner.combine_same_races(table_data)
+        print('Matching runners...')
         table_data['runner'] = runner_matcher.match_runners(table_data['result'])
+        print('Matching series...')
         table_data['series'] = series_matcher.match_series(table_data['race'])
+        print('Adding percentile field...')
         stat_field_creater.add_percentile_field(table_data['result'])
         
         print("Beginning database export...")
@@ -66,8 +71,6 @@ def parse_files(filename_list):
                 table_data[table_name].extend(file_parse[table_name])
             race_parse_state.race_id += 1
 
-    race_combiner.combine_same_races(table_data)
-
     return table_data
 
 
@@ -103,13 +106,13 @@ def parse_file(race_parse_state):
     if not results:
         return
 
-    table_data = {"race": [race_info], "result": results}
-    rename_columns(table_data, settings.TABLE_DEFS)
+    file_table_data = {"race": [race_info], "result": results}
+    rename_columns(file_table_data, settings.TABLE_DEFS)
 
-    add_birthdate_lte(table_data)
-    race_distance_splitter.assign_distances_and_race_ids(race_parse_state, table_data)
+    add_birthdate_lte(file_table_data)
+    race_distance_splitter.assign_distances_and_race_ids(race_parse_state, file_table_data)
 
-    return table_data
+    return file_table_data
 
 
 def rename_columns(all_table_data, table_defs):
