@@ -3,6 +3,7 @@ import sys
 import pymysql
 import re
 from metrics import metrics
+from containers.timer import Timer
 from containers.state import RaceParseState
 from helpers import mysql_helper
 from processors import result_parser, race_parser, runner_matcher, \
@@ -20,26 +21,42 @@ def main():
         filenames = [os.path.join(path, fn) for fn in os.listdir(path)]
 
         print("Parsing files...")
-        table_data = parse_files(filenames)
-        print('Combining same races...')
-        race_combiner.combine_same_races(table_data)
-        print('Matching runners...')
-        table_data['runner'] = runner_matcher.match_runners(table_data['result'])
-        print('Matching series...')
-        table_data['series'] = series_matcher.match_series(table_data['race'])
-        print('Adding percentile field...')
-        stat_field_creater.add_percentile_field(table_data['result'])
+        with Timer() as t:
+            table_data = parse_files(filenames)
+        print("... %.02f seconds" % t.interval)
         
-        print("Beginning database export...")
-        db_connection = pymysql.connect(host=DB_HOST, user=DB_USER,
-                                        passwd=DB_PASSWORD, database=DB_DATABASE,
-                                        charset="utf8")
-        for table_name in table_data:
-            save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
+        print('Combining same races...')
+        with Timer() as t:
+            race_combiner.combine_same_races(table_data)
+        print("... %.02f seconds" % t.interval)
+        
+        print('Matching runners...')
+        with Timer() as t:
+            table_data['runner'] = runner_matcher.match_runners(table_data['result'])
+        print("... %.02f seconds" % t.interval)
+        
+        print('Matching series...')
+        with Timer() as t:
+            table_data['series'] = series_matcher.match_series(table_data['race'])
+        print("... %.02f seconds" % t.interval)
+        
+        print('Adding percentile field...')
+        with Timer() as t:
+            stat_field_creater.add_percentile_field(table_data['result'])
+        print("... %.02f seconds" % t.interval)
+        
+        print("Exporting to database...")
+        with Timer() as t:
+            db_connection = pymysql.connect(host=DB_HOST, user=DB_USER,
+                passwd=DB_PASSWORD, database=DB_DATABASE, charset="utf8")
+            
+            for table_name in table_data:
+                save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
 
-        mysql_helper.run_commands(db_connection, manual_fixes.fixes)
+            mysql_helper.run_commands(db_connection, manual_fixes.fixes)
 
-        db_connection.close()
+            db_connection.close()
+        print("... %.02f seconds" % t.interval)
 
         metrics.print_errors()
         print("Finished.")
