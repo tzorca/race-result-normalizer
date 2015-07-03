@@ -59,7 +59,11 @@ TABLE_DEFS = {
             "id": "int not null primary key",
             "name": "text",
             "sex": "text",
-            "approximate_birthdate": "date"
+            "approximate_birthdate": "date",
+            "first_name": "text",
+            "last_name": "text",
+            "middle_name": "text",
+            "name_suffix": "text"
         },
         "column_renames": {
         }

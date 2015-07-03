@@ -7,7 +7,8 @@ from containers.timer import Timer
 from containers.state import RaceParseState
 from helpers import mysql_helper
 from processors import result_parser, race_parser, runner_matcher, \
-    series_matcher, race_distance_splitter, race_combiner, stat_field_creater
+    series_matcher, race_distance_splitter, race_combiner, \
+    stat_field_creater, runner_name_parser
 from settings import settings, manual_fixes
 from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
 from dateutil.relativedelta import relativedelta
@@ -40,9 +41,14 @@ def main():
             table_data['series'] = series_matcher.match_series(table_data['race'])
         print("... %.02f seconds" % t.interval)
         
-        print('Adding percentile field...')
+        print('Adding percentile field to results...')
         with Timer() as t:
             stat_field_creater.add_percentile_field(table_data['result'])
+        print("... %.02f seconds" % t.interval)
+        
+        print('Parsing runner names into components')
+        with Timer() as t:
+            runner_name_parser.add_name_component_fields(table_data['runner'])
         print("... %.02f seconds" % t.interval)
         
         print("Exporting to database...")
