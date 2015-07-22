@@ -36,8 +36,12 @@ def cluster_list_of_dicts(list_dicts, key, max_cluster_count, min_difference):
 def get_list_of_dicts_differences(list_dicts, key):
     differences = []
     for i, (dict_l, dict_r) in enumerate(zip(list_dicts, list_dicts[1:])):
-        difference = dict_r.get(key) - dict_l.get(key)
-        differences.append((i, difference))
+        data_r = dict_r.get(key)
+        data_l = dict_l.get(key)
+        if not data_r or not data_l:
+            differences.append(None)
+        else:
+            differences.append((i, data_r - data_l))
         
     return differences
 
