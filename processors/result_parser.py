@@ -1,6 +1,5 @@
 import re
-from metrics import metrics
-from helpers import field_normalizers
+from helpers import field_normalizers, logging
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
@@ -13,7 +12,7 @@ def get_results(filename, header_lines, data_from_file):
     if filter_bad_resultset(filename, mapped_results):
         return None
     
-    normalize(mapped_results)
+    normalize(mapped_results, filename)
     mapped_results = remove_bad_results(filename, mapped_results)
     
     return mapped_results
@@ -100,11 +99,19 @@ def map_results(field_defs, result_lines):
 
 TIME_FIELDS = ["Time", "Guntime", "Nettime", "Pace"]
 
-def normalize(mapped_results):
+def normalize(mapped_results, filename):
     for row in mapped_results:
         for time_field in TIME_FIELDS:
             if time_field in row:
-                time = field_normalizers.time_string_to_minutes_decimal(row[time_field])
+                try:
+                    time = field_normalizers.time_string_to_minutes_decimal(row[time_field])
+                except Exception as e:
+                    logging.log_error(
+                        filename=filename, 
+                        category='Could not parse time string', 
+                        details=str(e)
+                    )
+                
                 if time:
                     row[time_field] = round(time, 1)
                 else:
@@ -115,7 +122,7 @@ def normalize(mapped_results):
 BLANK_CUTOFF_RATIO = 0.05
 def filter_bad_resultset(filename, resultset):
     if (not resultset or len(resultset) == 0):
-        metrics.add_error(filename, "No result entries found")
+        logging.log_error(filename=filename, category="No result entries found", details="")
         return True
     
     return False
@@ -126,15 +133,15 @@ def remove_bad_results(filename, resultset):
     for result in resultset:
         name = result.get('Name')
         if not name or len(name) == 0:
-            metrics.add_error(filename, "Blank name")
+            logging.log_error(filename=filename, category="Blank name", details="")
             continue
         
         if '*' in name:
-            metrics.add_error(filename, "Invalid name")
+            logging.log_error(filename=filename, category="Invalid name", details=name)
             continue
         
         if not result.get('Nettime') and not result.get('Gunttime'):
-            metrics.add_error(filename, "Missing finish time")
+            logging.log_error(filename=filename, category="Missing finish time", details="Name = " + name)
             continue
         
         output_resultset.append(result)

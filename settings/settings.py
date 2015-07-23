@@ -80,4 +80,25 @@ TABLE_DEFS = {
         "column_renames": {
         }
     },
+    
+    "app_run": {
+        "name": "app_run",
+        "columns": {
+            "id": "int not null primary key auto_increment",
+            "ts": "timestamp default CURRENT_TIMESTAMP"
+        }
+    },
+    
+    "log": {
+        "name": "log_entries",
+        "columns": {
+            "id": "int not null primary key auto_increment",
+            "app_run_id": "int not null",
+            "error": "bit",
+            "filename": "text",
+            "category": "text",
+            "details": "text"
+        }
+        
+    }
 }

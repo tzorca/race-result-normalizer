@@ -2,10 +2,9 @@ import os
 import sys
 import pymysql
 import re
-from metrics import metrics
 from containers.timer import Timer
 from containers.state import RaceParseState
-from helpers import mysql_helper
+from helpers import mysql_helper, logging
 from processors import result_parser, race_parser, runner_matcher, \
     series_matcher, race_distance_splitter, race_combiner, \
     stat_field_creater, runner_name_parser
@@ -20,6 +19,20 @@ def main():
     else:
         path = sys.argv[1]
         filenames = [os.path.join(path, fn) for fn in os.listdir(path)]
+
+        print("Initializing database...")
+        with Timer() as t:
+            db_connection = pymysql.connect(host=DB_HOST, user=DB_USER,
+                passwd=DB_PASSWORD, database=DB_DATABASE, charset="utf8")
+           
+            mysql_helper.create_table(db_connection, settings.TABLE_DEFS['app_run'])
+            mysql_helper.create_table(db_connection, settings.TABLE_DEFS['log'])
+            
+            app_run_id = mysql_helper.insert_row(db_connection, settings.TABLE_DEFS['app_run'], {})
+            
+            
+        
+        print("... %.02f seconds" % t.interval)
 
         print("Parsing files...")
         with Timer() as t:
@@ -60,12 +73,20 @@ def main():
                 save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
 
             mysql_helper.run_commands(db_connection, manual_fixes.fixes)
+            
+            save_log_entries(db_connection, logging.log_entries, app_run_id)
 
             db_connection.close()
         print("... %.02f seconds" % t.interval)
 
-        metrics.print_errors()
         print("Finished.")
+
+
+def save_log_entries(db_connection, log_entries, app_run_id):
+    for entry in log_entries:
+        entry['app_run_id'] = app_run_id
+    
+    mysql_helper.insert_rows(db_connection, settings.TABLE_DEFS["log"], log_entries)
 
 
 def save_to_db(db_connection, dataset, table_def):
@@ -104,12 +125,12 @@ def parse_file(race_parse_state):
 
     for pattern in EXCLUDED_FILE_DATA_PATTERNS:
         if pattern.search(data_from_file):
-            metrics.add_error(filename, "Excluded file data pattern: " + str(pattern))
+            logging.log_info(filename=filename, category="Excluded file data pattern", details=str(pattern))
             return
 
     header_lines = result_parser.get_header(data_from_file)
     if not header_lines:
-        metrics.add_error(filename, "Could not read header")
+        logging.log_error(filename=filename, category="Could not read header", details="")
         return
 
     race_info = race_parser.get_race_info(result_parser.filter_to_result_lines(header_lines, data_from_file, True))
@@ -118,11 +139,11 @@ def parse_file(race_parse_state):
     race_info['filename'] = filename
 
     if not len(race_info['name'].strip()):
-        metrics.add_error(filename, "No race name found")
+        logging.log_error(filename=filename, category="No race name found", details="")
         return
 
     if not 'date' in race_info:
-        metrics.add_error(filename, "No race date found")
+        logging.log_error(filename=filename, category="No race date found", details="")
         return
 
     results = result_parser.get_results(filename, header_lines, data_from_file)

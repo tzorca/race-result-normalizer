@@ -30,6 +30,42 @@ def drop_table(db_connection: pymysql.Connection, table_name):
     cursor.close()
     db_connection.commit()
 
+def insert_row(db_connection: pymysql.Connection, table_def, row):
+    column_defs = table_def["columns"]
+    
+    # Build column names string from column definitions
+    column_names_string = "(" + ",".join([c for c in column_defs if validate_identifier(c)]) + ")"
+    
+    # Build first part of SQL string
+    insert_sql_start = "insert ignore into " + table_def["name"] + " " + column_names_string + " values "
+    
+    
+    placeholders_string = ["(" + ",".join(["%s"]*len(column_defs))  + ") "]
+    
+    cursor = db_connection.cursor()
+
+    parameters = []
+    for column_name in column_defs:
+        field_value = row.get(column_name)
+        if type(field_value) is time.struct_time:
+            field_value = data_helper.get_time_str(field_value)
+        parameters.append(field_value)
+        insert_sql = insert_sql_start + ",".join(placeholders_string) + ";"
+        
+    try:
+        cursor.execute(insert_sql, parameters)
+    except Exception as e:
+        print(e)
+        print(insert_sql)
+        print(row)
+    
+    last_id = cursor.lastrowid
+    
+    cursor.close()
+    db_connection.commit()
+    
+    return last_id
+
 BATCH_INSERT_LIMIT = 500
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
     column_defs = table_def["columns"]

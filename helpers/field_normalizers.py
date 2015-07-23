@@ -20,7 +20,7 @@ def time_string_to_minutes_decimal(time_str):
         t = datetime.strptime(time_str, "%H:%M:%S.%f")
         return datetime_to_timedelta(t).total_seconds() / 60.0
     except Exception as e:
-        print(e)
+        raise(e)
         return None
 
 def datetime_to_timedelta(dt):
