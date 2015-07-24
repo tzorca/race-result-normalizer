@@ -24,11 +24,13 @@ def create_table(db_connection: pymysql.Connection, table_def):
     cursor.close()
     db_connection.commit()
     
+    
 def drop_table(db_connection: pymysql.Connection, table_name):
     cursor = db_connection.cursor()
     cursor.execute("drop table if exists `%s`" % (table_name)) 
     cursor.close()
     db_connection.commit()
+
 
 def insert_row(db_connection: pymysql.Connection, table_def, row):
     column_defs = table_def["columns"]
@@ -65,6 +67,7 @@ def insert_row(db_connection: pymysql.Connection, table_def, row):
     db_connection.commit()
     
     return last_id
+
 
 BATCH_INSERT_LIMIT = 500
 def insert_rows(db_connection: pymysql.Connection, table_def, rows):
@@ -109,6 +112,7 @@ def run_commands(db_connection: pymysql.Connection, command_list):
         cursor.execute(command) 
     cursor.close()
     db_connection.commit()
+           
             
 IDENTIFIER_VALIDATOR = re.compile(r'^[0-9a-zA-Z_\$]+$');
 def validate_identifier(name):
