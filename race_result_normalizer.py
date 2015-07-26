@@ -1,5 +1,7 @@
 import os
 import sys
+import cProfile, pstats
+from io import StringIO
 import pymysql
 import re
 from containers.timer import Timer
@@ -66,20 +68,31 @@ def main():
         
         print("Exporting to database...")
         with Timer() as t:
-            db_connection = pymysql.connect(host=DB_HOST, user=DB_USER,
-                passwd=DB_PASSWORD, database=DB_DATABASE, charset="utf8")
+            pr = cProfile.Profile()
+            pr.enable()
+            export_to_db(db_connection, table_data, app_run_id)
+            pr.disable()
+            s = StringIO()
+            sortby = 't'
+            ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+            ps.print_stats()
+            print(s.getvalue())
             
-            for table_name in table_data:
-                save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
 
-            mysql_helper.run_commands(db_connection, manual_fixes.fixes)
-            
-            save_log_entries(db_connection, logging.log_entries, app_run_id)
-
-            db_connection.close()
         print("... %.02f seconds" % t.interval)
 
         print("Finished.")
+
+
+def export_to_db(db_connection, table_data, app_run_id):
+    for table_name in table_data:
+        save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
+
+    mysql_helper.run_commands(db_connection, manual_fixes.fixes)
+    
+    save_log_entries(db_connection, logging.log_entries, app_run_id)
+
+    db_connection.close()
 
 
 def save_log_entries(db_connection, log_entries, app_run_id):
