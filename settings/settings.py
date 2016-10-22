@@ -2,7 +2,7 @@ TABLE_DEFS = {
     "result": {
         "name": "result",
         "columns": {
-            "id": "int not null primary key auto_increment",
+            "id": "int not null primary key",
             "bib_num": "varchar(255)",
             "age": "text",
             "division": "varchar(255)",
@@ -16,9 +16,7 @@ TABLE_DEFS = {
             "percentile": "decimal(4,1)"
         },
         "ext_table_def": """
-            CONSTRAINT `UQ_result` UNIQUE NONCLUSTERED (
-                `race_id`, `runner_id`, `division_total`, `bib_num`
-            )
+            UNIQUE(race_id, runner_id, division_total, bib_num)
         """,
         "column_renames": {
             "Ag": "age",
@@ -41,8 +39,7 @@ TABLE_DEFS = {
         "columns": {
             "id": "int not null primary key",
             "series_id": "int",
-            "date": "date",
-            "time": "time",
+            "date_time": "datetime",
             "name": "text",
             "location": "varchar(255)",
             "certification": "varchar(255)",
@@ -84,7 +81,7 @@ TABLE_DEFS = {
     "app_run": {
         "name": "app_run",
         "columns": {
-            "id": "int not null primary key auto_increment",
+            "id": "int not null primary key",
             "ts": "timestamp default CURRENT_TIMESTAMP"
         }
     },
@@ -92,7 +89,7 @@ TABLE_DEFS = {
     "log": {
         "name": "log_entries",
         "columns": {
-            "id": "int not null primary key auto_increment",
+            "id": "int not null primary key",
             "app_run_id": "int not null",
             "error": "bit",
             "filename": "text",

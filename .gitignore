@@ -5,3 +5,6 @@ secure_settings.py
 *.tsv
 /data/
 .idea
+/db
+/containers/*.pyc
+/helpers/*.pyc

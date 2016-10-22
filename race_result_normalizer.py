@@ -2,11 +2,12 @@ import os
 import sys
 import cProfile, pstats
 from io import StringIO
-import pymysql
+import sqlite3
 import re
+from datetime import datetime
 from containers.timer import Timer
 from containers.state import RaceParseState
-from helpers import mysql_helper, logging
+from helpers import sqlite_helper, logging
 from processors import result_parser, race_parser, runner_matcher, \
     series_matcher, race_distance_splitter, race_combiner, \
     stat_field_creater, runner_name_parser
@@ -24,13 +25,12 @@ def main():
 
         print("Initializing database...")
         with Timer() as t:
-            db_connection = pymysql.connect(host=DB_HOST, user=DB_USER,
-                passwd=DB_PASSWORD, database=DB_DATABASE, charset="utf8")
+            db_connection = sqlite3.connect('db/race_results.sqlite3')
            
-            mysql_helper.create_table(db_connection, settings.TABLE_DEFS['app_run'])
-            mysql_helper.create_table(db_connection, settings.TABLE_DEFS['log'])
+            sqlite_helper.create_table(db_connection, settings.TABLE_DEFS['app_run'])
+            sqlite_helper.create_table(db_connection, settings.TABLE_DEFS['log'])
             
-            app_run_id = mysql_helper.insert_row(db_connection, settings.TABLE_DEFS['app_run'], {})
+            app_run_id = sqlite_helper.insert_row(db_connection, settings.TABLE_DEFS['app_run'], {"ts": datetime.now()})
             
             
         
@@ -73,7 +73,7 @@ def main():
             export_to_db(db_connection, table_data, app_run_id)
             pr.disable()
             s = StringIO()
-            sortby = 't'
+            sortby = 'cumtime'
             ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
             ps.print_stats()
             print(s.getvalue())
@@ -88,7 +88,7 @@ def export_to_db(db_connection, table_data, app_run_id):
     for table_name in table_data:
         save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
 
-    mysql_helper.run_commands(db_connection, manual_fixes.fixes)
+    sqlite_helper.run_commands(db_connection, manual_fixes.fixes)
     
     save_log_entries(db_connection, logging.log_entries, app_run_id)
 
@@ -99,13 +99,13 @@ def save_log_entries(db_connection, log_entries, app_run_id):
     for entry in log_entries:
         entry['app_run_id'] = app_run_id
     
-    mysql_helper.insert_rows(db_connection, settings.TABLE_DEFS["log"], log_entries)
+    sqlite_helper.insert_rows(db_connection, settings.TABLE_DEFS["log"], log_entries)
 
 
 def save_to_db(db_connection, dataset, table_def):
-    mysql_helper.drop_table(db_connection, table_def["name"])
-    mysql_helper.create_table(db_connection, table_def)
-    mysql_helper.insert_rows(db_connection, table_def, dataset)
+    sqlite_helper.drop_table(db_connection, table_def["name"])
+    sqlite_helper.create_table(db_connection, table_def)
+    sqlite_helper.insert_rows(db_connection, table_def, dataset)
 
 
 EXCLUDED_FILE_DATA_PATTERNS = [

@@ -1,5 +1,6 @@
 import re
 import time
+from time import mktime
 from datetime import datetime
 
 STATE = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
@@ -91,25 +92,33 @@ TIME_FORMATS = ["%I:%M %p", "%I:%M%p"]
 
 
 def normalize(race_info):
-    if ('date' in race_info):
-        date_str = race_info['date']
+    race_info['date_time'] = None
+
+    race_info_has_date = 'date' in race_info
+    if race_info_has_date:
+        race_date_str = race_info['date']
         race_info['date'] = None
         for date_format in DATE_FORMATS:
             try:
-                race_info['date'] = datetime.strptime(date_str, date_format)
+               race_info['date'] = datetime.strptime(race_date_str, date_format)
             except ValueError:
                 pass
             else:
                 break
+        race_info['date_time'] = race_info['date']
 
-    if ('time' in race_info):
-        time_str = race_info['time']
+    race_info_has_time = 'time' in race_info
+    if race_info_has_time:
+        race_time_str = race_info['time']
         race_info['time'] = None
         for time_format in TIME_FORMATS:
             try:
-                race_info['time'] = time.strptime(time_str, time_format)
+                race_info['time'] = datetime.strptime(race_time_str, time_format).time()
             except ValueError:
                 pass
             else:
                 break
 
+    if race_info_has_date and race_info['date'] is not None and race_info_has_time and race_info['time'] is not None:
+        race_info['date_time'] = datetime.combine(race_info['date'], race_info['time'])
+    
