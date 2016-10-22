@@ -3,32 +3,33 @@ import re
 SERIES_NAME_PATTERNS_TO_REMOVE = [
     # Space at end of name
     re.compile(r' +$'),
-                                  
+
     # Year at start of name
     re.compile(r'^2\d{3} '),
-    
+
     # Year at end of name
     re.compile(r' 2\d{3}$'),
-    
+
     # Annual text
     re.compile(r'(\d+)(st|nd|rd|th) Annual ', re.IGNORECASE),
-    
+
     # Commas
     re.compile(r',')
 ]
+
 
 def match_series(races):
     # Group races by month, series code name, and distance
     grouped_races = {}
     for race in races:
         month = race['date'].month
-        
+
         series_human_name = create_series_human_name(race['name'])
         series_code_name = codify_series_name(series_human_name)
-        
-        rounded_dist = round(race['dist'], 1) if race.get('dist') else None 
+
+        rounded_dist = round(race['dist'], 1) if race.get('dist') else None
         key = (month, series_code_name, rounded_dist)
-        
+
         if key in grouped_races:
             grouped_races[key]['races'].append(race)
         else:
@@ -48,9 +49,9 @@ def match_series(races):
         series_races = grouped_races[key]['races']
         for race in series_races:
             race['series_id'] = series_id
-                
+
         series_id += 1
-    
+
     return series_list
 
 
@@ -58,12 +59,14 @@ def create_series_human_name(race_name):
     series_human_name = race_name
     for pattern in SERIES_NAME_PATTERNS_TO_REMOVE:
         series_human_name = re.sub(pattern, "", series_human_name)
-    
+
     return series_human_name.strip()
 
 
 NUM_WORDS_TO_MATCH = 3
+
+
 def codify_series_name(series_human_name):
     series_code_name_words = series_human_name.lower().split()[:NUM_WORDS_TO_MATCH]
-    
+
     return ' '.join(series_code_name_words)

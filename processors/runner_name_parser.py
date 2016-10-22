@@ -1,5 +1,6 @@
 from nameparser import HumanName
 
+
 def add_name_component_fields(runners):
     for runner in runners:
         human_name = HumanName(runner['name'])

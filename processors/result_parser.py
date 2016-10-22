@@ -3,6 +3,7 @@ from helpers import field_normalizers, logging
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
+
 def get_results(filename, header_lines, data_from_file):
     field_defs = get_field_defs(header_lines)
 
@@ -11,11 +12,12 @@ def get_results(filename, header_lines, data_from_file):
 
     if filter_bad_resultset(filename, mapped_results):
         return None
-    
+
     normalize(mapped_results, filename)
     mapped_results = remove_bad_results(filename, mapped_results)
-    
+
     return mapped_results
+
 
 def get_header(raw_data):
     header_lines = None
@@ -30,20 +32,21 @@ def get_header(raw_data):
             break
 
         line_num += 1
-        
+
     return header_lines
+
 
 def get_field_defs(header_lines):
     field_defs = []
-    new_field = {'start':0}
+    new_field = {'start': 0}
 
     # TODO: This currently relies on a space being at the end of the header
     for i, c in enumerate(header_lines[1]):
-        if (c == " "):
+        if c == " ":
             new_field['end'] = i
             field_defs.append(new_field)
 
-            new_field = {'start':i + 1}
+            new_field = {'start': i + 1}
 
     for field in field_defs:
         start = field['start']
@@ -61,24 +64,25 @@ def filter_to_result_lines(header_lines, raw_data, invert: bool):
     result_lines = []
 
     past_header = False
-    
+
     for line in lines:
         # Skip header lines (Even when inverting)
-        if (any(line == header for header in header_lines)):
+        if any(line == header for header in header_lines):
             past_header = True
             continue
-        
+
         # Don't claim lines as results until after the header 
         if not invert and not past_header:
             continue
 
         # Skip lines whose length doesn't equal the header line's length
-        if (any(len(line) == good_length for good_length in good_lengths) == invert):
+        if any(len(line) == good_length for good_length in good_lengths) == invert:
             continue
 
         result_lines.append(line)
 
     return result_lines
+
 
 def map_results(field_defs, result_lines):
     mapped_results = []
@@ -97,21 +101,24 @@ def map_results(field_defs, result_lines):
 
     return mapped_results
 
+
 TIME_FIELDS = ["Time", "Guntime", "Nettime", "Pace"]
+
 
 def normalize(mapped_results, filename):
     for row in mapped_results:
         for time_field in TIME_FIELDS:
             if time_field in row:
+                time = None
                 try:
                     time = field_normalizers.time_string_to_minutes_decimal(row[time_field])
                 except Exception as e:
                     logging.log_error(
-                        filename=filename, 
-                        category='Could not parse time string', 
+                        filename=filename,
+                        category='Could not parse time string',
                         details=str(e)
                     )
-                
+
                 if time:
                     row[time_field] = round(time, 1)
                 else:
@@ -120,11 +127,13 @@ def normalize(mapped_results, filename):
 
 
 BLANK_CUTOFF_RATIO = 0.05
+
+
 def filter_bad_resultset(filename, resultset):
-    if (not resultset or len(resultset) == 0):
+    if not resultset or len(resultset) == 0:
         logging.log_error(filename=filename, category="No result entries found", details="")
         return True
-    
+
     return False
 
 
@@ -135,16 +144,14 @@ def remove_bad_results(filename, resultset):
         if not name or len(name) == 0:
             logging.log_error(filename=filename, category="Blank name", details="")
             continue
-        
+
         if '*' in name:
             logging.log_error(filename=filename, category="Invalid name", details=name)
             continue
-        
+
         if not result.get('Nettime') and not result.get('Gunttime'):
             logging.log_error(filename=filename, category="Missing finish time", details="Name = " + name)
             continue
-        
+
         output_resultset.append(result)
     return output_resultset
-    
-

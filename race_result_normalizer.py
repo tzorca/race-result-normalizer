@@ -1,24 +1,27 @@
+import cProfile
 import os
-import sys
-import cProfile, pstats
-from io import StringIO
-import sqlite3
+import pstats
 import re
+import sqlite3
+import sys
 from datetime import datetime
-from containers.timer import Timer
+from io import StringIO
+
+from dateutil.relativedelta import relativedelta
+
 from containers.state import RaceParseState
+from containers.timer import Timer
 from helpers import sqlite_helper, logging
 from processors import result_parser, race_parser, runner_matcher, \
     series_matcher, race_distance_splitter, race_combiner, \
     stat_field_creater, runner_name_parser
 from settings import settings, manual_fixes
-from settings.secure_settings import DB_DATABASE, DB_HOST, DB_PASSWORD, DB_USER
-from dateutil.relativedelta import relativedelta
+
 
 def main():
-    if (len(sys.argv) < 2):
+    if len(sys.argv) < 2:
         script_name = os.path.basename(__file__)
-        print ("Usage: " + script_name + " <directory>")
+        print("Usage: " + script_name + " <directory>")
     else:
         path = sys.argv[1]
         filenames = [os.path.join(path, fn) for fn in os.listdir(path)]
@@ -26,46 +29,44 @@ def main():
         print("Initializing database...")
         with Timer() as t:
             db_connection = sqlite3.connect('db/race_results.sqlite3')
-           
+
             sqlite_helper.create_table(db_connection, settings.TABLE_DEFS['app_run'])
             sqlite_helper.create_table(db_connection, settings.TABLE_DEFS['log'])
-            
+
             app_run_id = sqlite_helper.insert_row(db_connection, settings.TABLE_DEFS['app_run'], {"ts": datetime.now()})
-            
-            
-        
+
         print("... %.02f seconds" % t.interval)
 
         print("Parsing files...")
         with Timer() as t:
             table_data = parse_files(filenames)
         print("... %.02f seconds" % t.interval)
-        
+
         print('Combining same races...')
         with Timer() as t:
             race_combiner.combine_same_races(table_data)
         print("... %.02f seconds" % t.interval)
-        
+
         print('Matching runners...')
         with Timer() as t:
             table_data['runner'] = runner_matcher.match_runners(table_data['result'])
         print("... %.02f seconds" % t.interval)
-        
+
         print('Matching series...')
         with Timer() as t:
             table_data['series'] = series_matcher.match_series(table_data['race'])
         print("... %.02f seconds" % t.interval)
-        
+
         print('Adding percentile field to results...')
         with Timer() as t:
             stat_field_creater.add_percentile_field(table_data['result'])
         print("... %.02f seconds" % t.interval)
-        
+
         print('Parsing runner names into components')
         with Timer() as t:
             runner_name_parser.add_name_component_fields(table_data['runner'])
         print("... %.02f seconds" % t.interval)
-        
+
         print("Exporting to database...")
         with Timer() as t:
             pr = cProfile.Profile()
@@ -77,7 +78,6 @@ def main():
             ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
             ps.print_stats()
             print(s.getvalue())
-            
 
         print("... %.02f seconds" % t.interval)
 
@@ -89,7 +89,7 @@ def export_to_db(db_connection, table_data, app_run_id):
         save_to_db(db_connection, table_data[table_name], settings.TABLE_DEFS[table_name])
 
     sqlite_helper.run_commands(db_connection, manual_fixes.fixes)
-    
+
     save_log_entries(db_connection, logging.log_entries, app_run_id)
 
     db_connection.close()
@@ -98,7 +98,7 @@ def export_to_db(db_connection, table_data, app_run_id):
 def save_log_entries(db_connection, log_entries, app_run_id):
     for entry in log_entries:
         entry['app_run_id'] = app_run_id
-    
+
     sqlite_helper.insert_rows(db_connection, settings.TABLE_DEFS["log"], log_entries)
 
 
@@ -113,6 +113,7 @@ EXCLUDED_FILE_DATA_PATTERNS = [
     re.compile(r'^[*]{4} OVERALL .*? [*]{4}$', re.MULTILINE)
 ]
 
+
 def parse_files(filename_list):
     race_parse_state = RaceParseState("", 1)
     table_data = {"race": [], "result": []}
@@ -120,7 +121,7 @@ def parse_files(filename_list):
     for filename in filename_list:
         if not filename.endswith(".txt"):
             continue
-        
+
         race_parse_state.filename = filename
         file_parse = parse_file(race_parse_state)
         if file_parse:
@@ -155,7 +156,7 @@ def parse_file(race_parse_state):
         logging.log_error(filename=filename, category="No race name found", details="")
         return
 
-    if not 'date' in race_info:
+    if 'date' not in race_info:
         logging.log_error(filename=filename, category="No race date found", details="")
         return
 

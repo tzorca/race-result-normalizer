@@ -1,6 +1,4 @@
 import re
-import time
-from time import mktime
 from datetime import datetime
 
 STATE = "(Tennessee|TN|Georgia|GA|Alabama|AL|North Carolina|NC|Florida|FL)"
@@ -10,7 +8,6 @@ DIST_UNIT = "(kilometer|k|miler|miles|mile|mi)"
 
 ALL_PATTERN = re.compile('.*')
 TIME_PATTERN = re.compile(r'\d{1,2}:\d{2} ?(A|P)M')
-
 
 DATE_PATTERN_1 = MONTH + r' ?\d+, ?' + YEAR
 DATE_PATTERN_2 = r'\d{1,2}/\d{1,2}/' + YEAR
@@ -23,7 +20,7 @@ PAREN_BLOCK_PATTERN = re.compile(r'\(.*?\)')
 EXCLUDED_PATTERNS = [
     # Page Number
     re.compile(r'^\s*page \d+$', re.IGNORECASE),
-    
+
     # Blank line
     re.compile(r'^\s+$')
 ]
@@ -35,22 +32,24 @@ RACE_INFO_PATTERNS = [
         'name': 'date_time',
         'pattern': DATE_PATTERN,
         'components': [
-            {'name':'date', 'pattern': DATE_PATTERN},
-            {'name':'time', 'pattern': TIME_PATTERN}
+            {'name': 'date', 'pattern': DATE_PATTERN},
+            {'name': 'time', 'pattern': TIME_PATTERN}
         ]
     },
     {
         'name': 'location',
         'pattern': LOCATION_PATTERN,
         'components': [
-            {'name':'location', 'pattern': LOCATION_PATTERN},
-            {'name':'certification', 'pattern': CERTIFICATION_PATTERN}
+            {'name': 'location', 'pattern': LOCATION_PATTERN},
+            {'name': 'certification', 'pattern': CERTIFICATION_PATTERN}
         ]
     },
 ]
 
+
 def is_relevant_race_line(line):
     return not any(pattern.match(line) is not None for pattern in EXCLUDED_PATTERNS)
+
 
 def get_race_info(non_result_lines):
     matched_lines = []
@@ -60,7 +59,7 @@ def get_race_info(non_result_lines):
 
     for line in race_info_lines:
         line_matched = False
-        
+
         for line_breakdown in RACE_INFO_PATTERNS:
             line_name = line_breakdown['name']
             if line_breakdown['pattern'].search(line):
@@ -78,7 +77,7 @@ def get_race_info(non_result_lines):
         if not line_matched and "name" not in race_info:
             # The race name line should be the first line after filtering out the above
             race_info["name"] = line.strip()
-        
+
     # Remove unimportant parenthetical information
     # (Important information will have already been captured)
     for info_name in race_info:
@@ -100,7 +99,7 @@ def normalize(race_info):
         race_info['date'] = None
         for date_format in DATE_FORMATS:
             try:
-               race_info['date'] = datetime.strptime(race_date_str, date_format)
+                race_info['date'] = datetime.strptime(race_date_str, date_format)
             except ValueError:
                 pass
             else:
@@ -121,4 +120,3 @@ def normalize(race_info):
 
     if race_info_has_date and race_info['date'] is not None and race_info_has_time and race_info['time'] is not None:
         race_info['date_time'] = datetime.combine(race_info['date'], race_info['time'])
-    

@@ -1,5 +1,6 @@
 log_entries = []
 
+
 def log_error(filename, category, details):
     log_entries.append({
         'error': True,
@@ -7,6 +8,7 @@ def log_error(filename, category, details):
         'category': category,
         'details': details,
     })
+
 
 def log_info(filename, category, details):
     log_entries.append({
