@@ -1,3 +1,5 @@
+RESULT_TIME_COLUMN_NAMES = ['Guntime', 'Nettime', 'Chiptim', 'Time', 'Pace']
+
 TABLE_DEFS = {
     "app_run":
     {
@@ -49,6 +51,7 @@ TABLE_DEFS = {
             "Ag": "age",
             "Age": "age",
             "Bib#": "bib_num",
+            "Chiptim": "net_time",
             "Div": "division",
             "Div/Tot": "division_total",
             "Guntime": "gun_time",
@@ -78,7 +81,7 @@ TABLE_DEFS = {
         "column_renames": {
         }
     },
-              
+
     "runner":
     {
         "name": "runner",
@@ -96,7 +99,7 @@ TABLE_DEFS = {
         "column_renames": {
         }
     },
-              
+
     "series":
     {
         "name": "series",

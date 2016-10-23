@@ -1,5 +1,7 @@
 import re
 from helpers import field_normalizers, logging
+from settings import settings
+
 
 RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 
@@ -102,12 +104,10 @@ def map_results(field_defs, result_lines):
     return mapped_results
 
 
-TIME_FIELDS = ["Time", "Guntime", "Nettime", "Pace"]
-
 
 def normalize(mapped_results, filename):
     for row in mapped_results:
-        for time_field in TIME_FIELDS:
+        for time_field in settings.RESULT_TIME_COLUMN_NAMES:
             if time_field in row:
                 time = None
                 try:
@@ -149,7 +149,12 @@ def remove_bad_results(filename, resultset):
             logging.log_error(filename=filename, category="Invalid name", details=name)
             continue
 
-        if not result.get('Nettime') and not result.get('Guntime'):
+        has_finish_time = False
+        for time_col_name in settings.RESULT_TIME_COLUMN_NAMES:
+            if result.get(time_col_name):
+                has_finish_time = True
+        
+        if not has_finish_time:
             logging.log_error(filename=filename, category="Missing finish time", details="Name = " + name)
             continue
 
