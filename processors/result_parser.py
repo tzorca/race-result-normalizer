@@ -145,11 +145,11 @@ def remove_bad_results(filename, resultset):
             logging.log_error(filename=filename, category="Blank name", details="")
             continue
 
-        if '*' in name:
+        if '**' in name:
             logging.log_error(filename=filename, category="Invalid name", details=name)
             continue
 
-        if not result.get('Nettime') and not result.get('Gunttime'):
+        if not result.get('Nettime') and not result.get('Guntime'):
             logging.log_error(filename=filename, category="Missing finish time", details="Name = " + name)
             continue
 

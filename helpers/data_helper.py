@@ -8,6 +8,9 @@ def cluster_list_of_dicts(list_dicts, key, max_cluster_count, min_difference):
     # Get differences between each dictionary[key] (and indexes)
     differences = get_list_of_dicts_differences(list_dicts, key)
 
+    # Remove NoneType objects from differences
+    differences = [diff for diff in differences if diff is not None]
+
     # Sort difference list by descending difference
     differences.sort(key=lambda tup: tup[1], reverse=True)
 
