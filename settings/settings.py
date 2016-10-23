@@ -1,8 +1,34 @@
 TABLE_DEFS = {
-    "result": {
+    "app_run":
+    {
+        "name": "app_run",
+        "columns":
+        {
+            "id": "integer primary key",
+            "ts": "datetime"
+        }
+    },
+
+    "log":
+    {
+        "name": "log_entries",
+        "columns":
+        {
+            "id": "integer primary key",
+            "app_run_id": "integer not null",
+            "error": "bit",
+            "filename": "text",
+            "category": "text",
+            "details": "text"
+        }
+    },
+
+    "result":
+    {
         "name": "result",
-        "columns": {
-            "id": "int not null primary key",
+        "columns":
+        {
+            "id": "integer primary key",
             "bib_num": "varchar(255)",
             "age": "text",
             "division": "varchar(255)",
@@ -18,7 +44,8 @@ TABLE_DEFS = {
         "ext_table_def": """
             UNIQUE(race_id, runner_id, division_total, bib_num)
         """,
-        "column_renames": {
+        "column_renames":
+        {
             "Ag": "age",
             "Age": "age",
             "Bib#": "bib_num",
@@ -34,11 +61,13 @@ TABLE_DEFS = {
         },
     },
 
-    "race": {
+    "race":
+    {
         "name": "race",
-        "columns": {
-            "id": "int not null primary key",
-            "series_id": "int",
+        "columns":
+        {
+            "id": "integer primary key",
+            "series_id": "integer",
             "date_time": "datetime",
             "name": "text",
             "location": "varchar(255)",
@@ -50,10 +79,12 @@ TABLE_DEFS = {
         }
     },
               
-    "runner": {
+    "runner":
+    {
         "name": "runner",
-        "columns": {
-            "id": "int not null primary key",
+        "columns":
+        {
+            "id": "integer primary key",
             "name": "text",
             "sex": "text",
             "approximate_birthdate": "date",
@@ -66,36 +97,17 @@ TABLE_DEFS = {
         }
     },
               
-    "series": {
+    "series":
+    {
         "name": "series",
-        "columns": {
-            "id": "int not null primary key",
+        "columns":
+        {
+            "id": "integer primary key",
             "name": "text",
-            "month": "int",
+            "month": "integer",
             "dist": "decimal(5,1)"
         },
         "column_renames": {
         }
-    },
-    
-    "app_run": {
-        "name": "app_run",
-        "columns": {
-            "id": "int not null primary key",
-            "ts": "timestamp default CURRENT_TIMESTAMP"
-        }
-    },
-    
-    "log": {
-        "name": "log_entries",
-        "columns": {
-            "id": "int not null primary key",
-            "app_run_id": "int not null",
-            "error": "bit",
-            "filename": "text",
-            "category": "text",
-            "details": "text"
-        }
-        
     }
 }
