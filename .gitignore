@@ -8,3 +8,5 @@ secure_settings.py
 /db
 /containers/*.pyc
 /helpers/*.pyc
+
+*.bat

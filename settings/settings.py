@@ -90,7 +90,7 @@ TABLE_DEFS = {
             "id": "integer primary key",
             "name": "text",
             "sex": "text",
-            "approximate_birthdate": "date",
+            "approximate_birthdate": "datetime",
             "first_name": "text",
             "last_name": "text",
             "middle_name": "text",
