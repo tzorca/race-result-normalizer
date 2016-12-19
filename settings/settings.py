@@ -1,4 +1,4 @@
-RESULT_TIME_COLUMN_NAMES = ['Guntime', 'Nettime', 'Chiptim', 'Time', 'Pace']
+RESULT_TIME_COLUMN_NAMES = ['Guntime', 'Nettime', 'Chiptim', 'Chiptime', 'Time', 'Pace']
 
 TABLE_DEFS = {
     "app_run":
@@ -52,6 +52,7 @@ TABLE_DEFS = {
             "Age": "age",
             "Bib#": "bib_num",
             "Chiptim": "net_time",
+            "Chiptime": "net_time",
             "Div": "division",
             "Div/Tot": "division_total",
             "Guntime": "gun_time",
