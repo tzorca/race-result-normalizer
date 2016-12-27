@@ -9,7 +9,6 @@ RESULTS_HEADER_SEPARATOR_PATTERN = re.compile(r'(=+ ?)+')
 def get_results(filename, header_lines, data_from_file):
     field_defs = get_field_defs(header_lines)
 
-
     result_lines = filter_to_result_lines(header_lines, data_from_file, False)
 
     mapped_results = map_results(field_defs, result_lines)
@@ -63,7 +62,7 @@ def get_field_defs(header_lines):
 
 def filter_to_result_lines(header_lines, raw_data, invert: bool):
     lines = raw_data.splitlines(True)
-    result_header_lengths = list(map(len, header_lines))
+    # result_header_lengths = list(map(len, header_lines))
 
     result_lines = []
 
@@ -80,8 +79,8 @@ def filter_to_result_lines(header_lines, raw_data, invert: bool):
             continue
 
         # Skip lines whose length doesn't equal the header line's length
-        if any(len(line) == line_length for line_length in result_header_lengths) == invert:
-            continue
+        # if any(len(line) == line_length for line_length in result_header_lengths) == invert:
+        #     continue
 
         result_lines.append(line)
 
