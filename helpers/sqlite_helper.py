@@ -37,9 +37,13 @@ def insert_row(db, table_def, row):
 def insert_rows(db, table_def, rows):
     insert_id = None
 
+    # Get a list of column names to be used
+    if len(rows) == 0:
+        print("No rows to insert for " + table_def["name"])
+        return
+
     column_defs = table_def["columns"]
 
-    # Get a list of column names to be used
     first_row = rows[0]
     col_names = []
     for col_name in first_row:

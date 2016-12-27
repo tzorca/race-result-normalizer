@@ -6,12 +6,12 @@ def time_string_to_minutes_decimal(time_str):
 
     # Blank
     if len(time_str.strip()) == 0:
-        return None
+        raise ValueError('Time string is blank')
 
     if colon_count == 1:
         time_str = '0:' + time_str
     elif colon_count != 2:
-        return None
+        raise ValueError('Time string has wrong number of colons')
 
     if '.' not in time_str:
         time_str += '.0'

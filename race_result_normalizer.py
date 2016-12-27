@@ -1,11 +1,8 @@
-import cProfile
 import os
-import pstats
 import re
 import sqlite3
 import sys
 from datetime import datetime
-from io import StringIO
 
 from dateutil.relativedelta import relativedelta
 
@@ -69,17 +66,21 @@ def main():
 
         print("Exporting to database...")
         with Timer() as t:
-            pr = cProfile.Profile()
-            pr.enable()
+            # pr = cProfile.Profile()
+            # pr.enable()
             export_to_db(db_connection, table_data, app_run_id)
-            pr.disable()
-            s = StringIO()
-            sortby = 'cumtime'
-            ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-            ps.print_stats()
-            print(s.getvalue())
+            # pr.disable()
+            # s = StringIO()
+            # sortby = 'cumtime'
+            # ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+            # ps.print_stats()
+            # print(s.getvalue())
 
         print("... %.02f seconds" % t.interval)
+
+        for table_name in table_data:
+            record_count = len(table_data[table_name])
+            print(table_name + ": " + str(record_count))
 
         print("Finished.")
 
@@ -178,8 +179,8 @@ def rename_columns(all_table_data, table_defs):
         column_renames = table_defs[table_name]['column_renames']
         table_data = all_table_data[table_name]
         for row in table_data:
-            for old_name in row:
-                if old_name in column_renames:
+            for old_name in column_renames:
+                if old_name in row:
                     new_name = column_renames[old_name]
                     row[new_name] = row.pop(old_name)
 
