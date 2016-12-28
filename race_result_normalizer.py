@@ -12,7 +12,7 @@ from helpers import sqlite_helper, logging
 from processors import result_parser, race_parser, runner_matcher, \
     series_matcher, race_distance_splitter, race_combiner, \
     stat_field_creater, runner_name_parser
-from settings import settings, manual_fixes
+from settings import settings, secure_settings, manual_fixes
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
 
         print("Initializing database...")
         with Timer() as t:
-            db_connection = sqlite3.connect('db/race_results.sqlite3')
+            db_connection = sqlite3.connect(secure_settings.DB_LOCATION)
 
             sqlite_helper.create_table(db_connection, settings.TABLE_DEFS['app_run'])
             sqlite_helper.create_table(db_connection, settings.TABLE_DEFS['log'])
