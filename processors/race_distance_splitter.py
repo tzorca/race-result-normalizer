@@ -42,11 +42,15 @@ def group_by_distance(results, dist_grouping_percent_diff):
             dist_grouped_results[None].append(result)
             continue
 
-        # If no pace exists, assume pace is the same as time
-        result['pace'] = result.get('pace') or time
+        # If no pace exists, don't set pace
+        result['pace'] = result.get('pace') or None
 
-        result['dist'] = time / result['pace']
-        grouped_dist = round(result['dist'], 1)
+        if result['pace']:
+            result['dist'] = time / result['pace']
+        else:
+            result['Dist'] = None
+
+        grouped_dist = round(result['dist'], 1) if result.get('Dist') else None
 
         if len(dist_grouped_results) == 0:
             dist_grouped_results[grouped_dist].append(result)

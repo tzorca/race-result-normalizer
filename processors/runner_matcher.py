@@ -35,7 +35,7 @@ def match_runners(all_results):
             'F': cluster_results_by_birthdate_lte(specific_name_female_results)
         }
 
-        # Try generating clusters for females + blanks; males 
+        # Try generating clusters for females + blanks; males
         female_and_blank_results = list(specific_name_female_results)
         female_and_blank_results.extend(specific_name_blank_gender_results)
         attempt_2 = {

@@ -60,9 +60,8 @@ def get_field_defs(header_lines):
     return field_defs
 
 
-def filter_to_result_lines(header_lines, raw_data, invert: bool):
+def filter_to_result_lines(header_lines, raw_data, invert):
     lines = raw_data.splitlines(True)
-    # result_header_lengths = list(map(len, header_lines))
 
     result_lines = []
 
@@ -74,13 +73,9 @@ def filter_to_result_lines(header_lines, raw_data, invert: bool):
             past_header = True
             continue
 
-        # Don't claim lines as results until after the header 
+        # Don't claim lines as results until after the header
         if not invert and not past_header:
             continue
-
-        # Skip lines whose length doesn't equal the header line's length
-        # if any(len(line) == line_length for line_length in result_header_lengths) == invert:
-        #     continue
 
         result_lines.append(line)
 

@@ -94,6 +94,15 @@ def lowest_percent_diff_element(the_dict, the_number):
 
 
 def get_abs_percent_diff(num_a, num_b):
+    if not num_a and num_b:
+        return 1
+
+    if not num_b and num_a:
+        return -1
+
+    if not num_b and not num_b:
+        return 0
+
     return abs(num_a - num_b) / num_b
 
 
