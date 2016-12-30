@@ -1,4 +1,3 @@
-from containers.state import RaceParseState
 from helpers import data_helper
 from collections import defaultdict
 import numpy as np
@@ -6,7 +5,7 @@ import numpy as np
 MIN_PERCENT_DIFF_FOR_NEW_DIST = .25
 
 
-def assign_distances_and_race_ids(state: RaceParseState, table_data):
+def assign_distances_and_race_ids(state, table_data):
     dist_grouped_results = group_by_distance(table_data['result'],
                                              MIN_PERCENT_DIFF_FOR_NEW_DIST)
 
