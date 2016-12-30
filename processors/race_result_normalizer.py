@@ -32,7 +32,7 @@ class RaceResultNormalizer:
     def normalize_directory(self, input_directory):
         filepaths = [os.path.join(input_directory, fn) for fn in os.listdir(input_directory)]
 
-        self.normalize_files(filepaths)
+        return self.normalize_files(filepaths)
 
     def normalize_files(self, filepaths):
         print("Initializing database...")
@@ -87,6 +87,8 @@ class RaceResultNormalizer:
             print(table_name + ": " + str(record_count))
 
         print("Finished.")
+
+        return table_data
 
     def export_to_db(self, db_connection, table_data, app_run_id):
         for table_name in table_data:
