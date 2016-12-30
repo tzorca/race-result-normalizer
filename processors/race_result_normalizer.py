@@ -20,20 +20,24 @@ from processors import runner_name_parser
 
 class RaceResultNormalizer:
 
-    def __init__(self, table_defs, manual_fixes):
+    def __init__(self, table_defs, manual_fixes, db_location):
         self.table_defs = table_defs
         self.manual_fixes = manual_fixes
+        self.db_location = db_location
         self.EXCLUDED_FILE_DATA_PATTERNS = [
             # Duplicate files
             re.compile(r'^[*]{4} OVERALL .*? [*]{4}$', re.MULTILINE)
         ]
 
-    def normalize(self, input_directory, db_location):
-        filenames = [os.path.join(input_directory, fn) for fn in os.listdir(input_directory)]
+    def normalize_directory(self, input_directory):
+        filepaths = [os.path.join(input_directory, fn) for fn in os.listdir(input_directory)]
 
+        self.normalize_files(filepaths)
+
+    def normalize_files(self, filepaths):
         print("Initializing database...")
         with Timer() as t:
-            db_connection = sqlite3.connect(db_location)
+            db_connection = sqlite3.connect(self.db_location)
 
             sqlite_helper.create_table(db_connection, self.table_defs['app_run'])
             sqlite_helper.create_table(db_connection, self.table_defs['log'])
@@ -44,7 +48,7 @@ class RaceResultNormalizer:
 
         print("Parsing files...")
         with Timer() as t:
-            table_data = self.parse_files(filenames)
+            table_data = self.parse_files(filepaths)
         print("... %.02f seconds" % t.interval)
 
         print('Combining same races...')
@@ -88,7 +92,7 @@ class RaceResultNormalizer:
         for table_name in table_data:
             self.save_to_db(db_connection, table_data[table_name], self.table_defs[table_name])
 
-        sqlite_helper.run_commands(db_connection, self.manual_fixes.fixes)
+        sqlite_helper.run_commands(db_connection, self.manual_fixes)
 
         self.save_log_entries(db_connection, logging.log_entries, app_run_id)
 
